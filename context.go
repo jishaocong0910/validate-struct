@@ -1,20 +1,18 @@
-/*
-Copyright 2024-present jishaocong0910
+// Copyright 2024-present jishaocong0910
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package vfy
+package validate
 
 import (
 	"context"
@@ -22,8 +20,7 @@ import (
 	"strings"
 )
 
-// VContext 验证过程的上下文
-type VContext struct {
+type Context struct {
 	context.Context
 	// 错误码，一般情况只有“SUCCESS”和"FALSE"，使用自定义错误码选项 [Code] 时会有其他值。
 	code string
@@ -38,69 +35,69 @@ type VContext struct {
 }
 
 // 是否打断校验
-func (vc *VContext) interrupt() bool {
-	return vc.hasWrong && !vc.all
+func (v *Context) interrupt() bool {
+	return v.hasWrong && !v.all
 }
 
 // 校验结构体（中的字段）的前置逻辑
-func (vc *VContext) beforeDiveStruct() {
-	vc.fieldInfo = &FieldInfo{
-		fieldNamePrefix: vc.fieldInfo.fieldName + ".",
+func (v *Context) beforeDiveStruct() {
+	v.fieldInfo = &FieldInfo{
+		fieldNamePrefix: v.fieldInfo.fieldName + ".",
 	}
 }
 
 // 校验切片元素的前置逻辑
-func (vc *VContext) beforeDiveSliceMap(elemName string) {
-	vc.fieldInfo = &FieldInfo{
-		fieldName:   vc.fieldInfo.fieldName + elemName,
+func (v *Context) beforeDiveSliceMap(elemName string) {
+	v.fieldInfo = &FieldInfo{
+		fieldName:   v.fieldInfo.fieldName + elemName,
 		hasElemName: true,
 	}
 }
 
 // 校验字段的前置逻辑
-func (vc *VContext) beforeCheckField(fieldName string, opts []FieldOption) *VContext {
-	if vc.fieldInfo.hasElemName {
-		vc.fieldInfo = &FieldInfo{
-			fieldName:   vc.fieldInfo.fieldName,
+func (v *Context) beforeCheckField(fieldName string, opts []FieldOption) *Context {
+	if v.fieldInfo.hasElemName {
+		v.fieldInfo = &FieldInfo{
+			fieldName:   v.fieldInfo.fieldName,
 			hasElemName: true,
 		}
 	} else {
-		vc.fieldInfo = &FieldInfo{
-			fieldNamePrefix: vc.fieldInfo.fieldNamePrefix,
-			fieldName:       vc.fieldInfo.fieldNamePrefix + fieldName,
+		v.fieldInfo = &FieldInfo{
+			fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
+			fieldName:       v.fieldInfo.fieldNamePrefix + fieldName,
 		}
 	}
 	for _, o := range opts {
-		o(vc.fieldInfo)
+		o(v.fieldInfo)
 	}
-	return vc
+	return v
 }
 
 // 校验内嵌结构体（中的字段）前置逻辑
-func (vc *VContext) beforeCheckEmbed() *VContext {
-	vc.fieldInfo = &FieldInfo{
-		fieldNamePrefix: vc.fieldInfo.fieldNamePrefix,
+func (v *Context) beforeCheckEmbed() *Context {
+	v.fieldInfo = &FieldInfo{
+		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 	}
-	return vc
+	return v
 }
 
 // 校验失败处理
-func (vc *VContext) fail(mbf msgBuildFunc, confines []string) {
-	vc.hasWrong = true
-	if !vc.all {
-		vc.code = vc.fieldInfo.code
+func (v *Context) fail(mbf msgBuildFunc, confines []string) {
+	v.hasWrong = true
+	if !v.all {
+		v.code = v.fieldInfo.code
 	}
-	vc.fieldInfo.confines = confines
+	v.fieldInfo.confines = confines
 	var msg string
-	if vc.fieldInfo.mbf == nil {
+	if v.fieldInfo.mbf == nil {
 		if mbf != nil {
-			mbf(vc.fieldInfo)
+			mbf(v.fieldInfo)
 		}
 	} else {
-		vc.fieldInfo.mbf(vc.fieldInfo)
+		v.fieldInfo.mbf(v.fieldInfo)
 	}
-	msg = vc.fieldInfo.msg
-	vc.msgs = append(vc.msgs, msg)
+	msg = v.fieldInfo.msg
+	v.msgs = append(v.msgs, msg)
 }
 
 // FieldInfo 字段信息
@@ -111,8 +108,6 @@ type FieldInfo struct {
 	hasElemName bool
 	// nil时忽略校验
 	omitempty bool
-	// 修字段值函数
-	amend func(a any) any
 	// 字段名
 	fieldName string
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段

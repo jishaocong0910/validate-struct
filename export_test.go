@@ -1,26 +1,24 @@
-/*
-Copyright 2024-present jishaocong0910
+// Copyright 2024-present jishaocong0910
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+package validate
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package vfy
-
-func NewDefaultContext() *VContext {
-	return &VContext{all: false, fieldInfo: &FieldInfo{}}
+func NewDefaultContext() *Context {
+	return &Context{all: false, fieldInfo: &FieldInfo{}}
 }
 
-func GetResult(vc *VContext) (code string, msg string, msgs []string) {
+func GetResult(vc *Context) (code string, msg string, msgs []string) {
 	if !vc.hasWrong {
 		code = SUCCESS
 	} else if vc.code == "" {
@@ -35,23 +33,23 @@ func GetResult(vc *VContext) (code string, msg string, msgs []string) {
 	return
 }
 
-func SetHasWrong(vc *VContext) {
+func SetHasWrong(vc *Context) {
 	vc.hasWrong = true
 }
 
-func SetAll(vc *VContext) {
+func SetAll(vc *Context) {
 	vc.all = true
 }
 
-func SetFieldName(vc *VContext, fieldName string) {
+func SetFieldName(vc *Context, fieldName string) {
 	vc.fieldInfo.fieldName = fieldName
 }
 
-func SetOmittable(vc *VContext) {
+func SetOmittable(vc *Context) {
 	Omitempty()(vc.fieldInfo)
 }
 
-func Predicate[T any](vc *VContext, t *T, opts []RuleOption, confineFunc func() []string, predicateNil func() bool, predicateNoNil func() bool) {
+func Predicate[T any](vc *Context, t *T, opts []RuleOption, confineFunc func() []string, predicateNil func() bool, predicateNoNil func() bool) {
 	predicate[int, T](vc, t, opts, msgBuildFuncDefault, confineFunc, predicateNil, predicateNoNil)
 }
 

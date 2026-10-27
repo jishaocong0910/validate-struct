@@ -1,20 +1,18 @@
-/*
-Copyright 2024-present jishaocong0910
+// Copyright 2024-present jishaocong0910
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package vfy_test
+package validate_test
 
 import (
 	"strings"
@@ -165,7 +163,7 @@ type base struct {
 	id string
 }
 
-func (b base) Checklist(vc *vfy.VContext) {
+func (b base) Checklist(vc *vfy.Context) {
 	vfy.String(vc, &b.id, "id").NotBlank()
 }
 
@@ -175,7 +173,7 @@ type user struct {
 	attach attach
 }
 
-func (u user) Checklist(vc *vfy.VContext) {
+func (u user) Checklist(vc *vfy.Context) {
 	vfy.String(vc, &u.name, "name").NotBlank()
 	vfy.Embed(vc, &u.base)
 	vfy.Struct(vc, &u.attach, "attach").Dive()
@@ -188,7 +186,7 @@ type attach struct {
 	schools map[string]school
 }
 
-func (a attach) Checklist(vc *vfy.VContext) {
+func (a attach) Checklist(vc *vfy.Context) {
 	vfy.Embed(vc, &a.base)
 	vfy.Slice(vc, a.images, "images").Dive(func(i image) {
 		vfy.Struct(vc, &i, "not work").Dive()
@@ -208,7 +206,7 @@ type image struct {
 	base
 }
 
-func (i image) Checklist(vc *vfy.VContext) {
+func (i image) Checklist(vc *vfy.Context) {
 	vfy.String(vc, &i.url, "url").NotBlank()
 	vfy.Embed(vc, &i.base)
 }
@@ -217,7 +215,7 @@ type school struct {
 	Name string
 }
 
-func (s school) Checklist(vc *vfy.VContext) {
+func (s school) Checklist(vc *vfy.Context) {
 	vfy.String(vc, &s.Name, "name").NotBlank()
 }
 
@@ -267,7 +265,7 @@ func TestFieldVerifyFunc(t *testing.T) {
 
 func TestCheckNil(t *testing.T) {
 	r := require.New(t)
-	code, msg, msgs := vfy.Check(nil, (vfy.Verifiable)(nil))
+	code, msg, msgs := vfy.Check(nil, (vfy.Validatable)(nil))
 	r.Equal("", code)
 	r.Equal("", msg)
 	r.Nil(msgs)

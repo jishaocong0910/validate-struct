@@ -1,4 +1,4 @@
-package vfy_test
+package validate_test
 
 import (
 	"testing"
@@ -11,16 +11,16 @@ type embedTest struct {
 	field *string
 }
 
-func (e embedTest) Checklist(vc *vfy.VContext) {
+func (e embedTest) Checklist(vc *vfy.Context) {
 	vfy.String(vc, e.field, "field").Required()
 }
 
 func TestCheckEmbed_Required(t *testing.T) {
 	r := require.New(t)
-	testSuccess(r, func(vc *vfy.VContext) {
+	testSuccess(r, func(vc *vfy.Context) {
 		vfy.Embed(vc, (*embedTest)(nil))
 	})
-	testFail(r, func(vc *vfy.VContext) {
+	testFail(r, func(vc *vfy.Context) {
 		vfy.Embed(vc, &embedTest{})
 	}, "field is required")
 }
