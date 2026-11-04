@@ -21,7 +21,7 @@ type checkBool struct {
 
 func (c *checkBool) Required(opts ...RuleOption) *checkBool {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, bool](c.b, msgBuilderRequired, nil, func() bool {
+	c.v.checkRule[any, bool](c.b, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -29,7 +29,7 @@ func (c *checkBool) Required(opts ...RuleOption) *checkBool {
 
 func (c *checkBool) Custom(successIfNil bool, custom func(b bool) bool, opts ...RuleOption) *checkBool {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, bool](c.b, msgBuilderDefault, nil, func() bool {
+	c.v.checkRule[any, bool](c.b, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.b)

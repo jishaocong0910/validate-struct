@@ -15,24 +15,24 @@
 package validate
 
 // 校验结构体
-type checkStruct[V Validatable] struct {
+type checkStruct[T any, V validatablePtr[T]] struct {
 	v *Validator
-	s *V
+	s V
 }
 
 // Required 限制不能为nil
-func (c *checkStruct[V]) Required(opts ...RuleOption) *checkStruct[V] {
+func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, V](c.s, msgBuilderRequired, nil, func() bool {
+	c.v.checkRule[any, T](c.s, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
 }
 
 // Custom 自定义校验
-func (c *checkStruct[V]) Custom(successIfNil bool, custom func(s V) bool, opts ...RuleOption) *checkStruct[V] {
+func (c *checkStruct[T, V]) Custom(successIfNil bool, custom func(s T) bool, opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, V](c.s, msgBuilderDefault, nil, func() bool {
+	c.v.checkRule[any, T](c.s, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.s)
@@ -41,11 +41,14 @@ func (c *checkStruct[V]) Custom(successIfNil bool, custom func(s V) bool, opts .
 }
 
 // Dive 下沉校验结构体的字段
-func (c *checkStruct[V]) Dive() {
+func (c *checkStruct[T, V]) Dive() {
+	if c.v.stop() {
+		return
+	}
 	if c.s != nil {
 		fi := c.v.fieldInfo
 		c.v.beforeDiveStruct()
-		(*c.s).Checklist(c.v)
+		c.s.Checklist(c.v)
 		c.v.fieldInfo = fi
 	}
 }

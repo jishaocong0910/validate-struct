@@ -16,80 +16,80 @@ package validate
 
 import "fmt"
 
-type msgBuilder func(f *FieldInfo) string
+type messageBuilder func(f *FieldInfo) string
 
-func msgBuilderDefault(f *FieldInfo) string {
+func messageDefault(f *FieldInfo) string {
 	return fmt.Sprintf("%s is illegal", f.fieldName)
 }
 
-func msgBuilderRequired(f *FieldInfo) string {
+func messageRequired(f *FieldInfo) string {
 	return fmt.Sprintf("%s is required", f.fieldName)
 }
 
-func msgBuilderMin(f *FieldInfo) string {
+func messageMin(f *FieldInfo) string {
 	return fmt.Sprintf("%s must not be less than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderMax(f *FieldInfo) string {
+func messageMax(f *FieldInfo) string {
 	return fmt.Sprintf("%s must not be greater than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderRange(f *FieldInfo) string {
+func messageRange(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be %s to %s", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
-func msgBuilderGt(f *FieldInfo) string {
+func messageGt(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be greater than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLt(f *FieldInfo) string {
+func messageLt(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be less than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderWithin(f *FieldInfo) string {
+func messageWithin(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be greater than %s and less than %s", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
-func msgBuilderEnum(f *FieldInfo) string {
+func messageEnum(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be %s", f.fieldName, f.Args())
 }
 
-func msgBuilderNotBlank(f *FieldInfo) string {
+func messageNotBlank(f *FieldInfo) string {
 	return fmt.Sprintf("%s must not be blank", f.fieldName)
 }
 
-func msgBuilderRegex(f *FieldInfo) string {
+func messageRegex(f *FieldInfo) string {
 	return fmt.Sprintf("%s's format is illegal", f.fieldName)
 }
 
-func msgBuilderNotEmpty(f *FieldInfo) string {
+func messageNotEmpty(f *FieldInfo) string {
 	return fmt.Sprintf("%s must not be empty", f.fieldName)
 }
 
-func msgBuilderLength(f *FieldInfo) string {
+func messageLength(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must be %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLengthMin(f *FieldInfo) string {
+func messageLengthMin(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must not be less than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLengthMax(f *FieldInfo) string {
+func messageLengthMax(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must not be greater than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLengthRange(f *FieldInfo) string {
+func messageLengthRange(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must be %s to %s", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
-func msgBuilderLengthGt(f *FieldInfo) string {
+func messageLengthGt(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must be greater than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLengthLt(f *FieldInfo) string {
+func messageLengthLt(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must be less than %s", f.fieldName, f.Arg(0))
 }
 
-func msgBuilderLengthWithin(f *FieldInfo) string {
+func messageLengthWithin(f *FieldInfo) string {
 	return fmt.Sprintf("%s's length must be greater than %s and less than %s", f.fieldName, f.Arg(0), f.Arg(1))
 }

@@ -17,7 +17,6 @@ package validate
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 )
 
@@ -30,8 +29,13 @@ type Validatable interface {
 	Checklist(v *Validator)
 }
 
-func Check[V Validatable](ctx context.Context, v V, opts ...ValidatorOption) (code string, msg string, msgs []string) {
-	if !reflect.Indirect(reflect.ValueOf(v)).IsValid() {
+type validatablePtr[T any] interface {
+	*T
+	Validatable
+}
+
+func Check[T any, V validatablePtr[T]](ctx context.Context, v V, opts ...ValidatorOption) (code string, message string, messages []string) {
+	if v == nil {
 		return
 	}
 	if ctx == nil {
@@ -52,9 +56,9 @@ func Check[V Validatable](ctx context.Context, v V, opts ...ValidatorOption) (co
 			code = FAIL
 		}
 	}
-	msgs = validator.msgs
-	if len(msgs) > 0 {
-		msg = msgs[0]
+	messages = validator.msgs
+	if len(messages) > 0 {
+		message = messages[0]
 	}
 	return
 }
@@ -148,9 +152,9 @@ func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *ch
 	return &checkString{v: v, s: s}
 }
 
-func (v *Validator) Struct[V Validatable](s *V, fieldName string, opts ...FieldOption) *checkStruct[V] {
+func (v *Validator) Struct[T any, V validatablePtr[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkStruct[V]{v: v, s: s}
+	return &checkStruct[T, V]{v: v, s: s}
 }
 
 func (v *Validator) Slice[T any](s []T, fieldName string, opts ...FieldOption) *checkSlice[T] {
@@ -168,9 +172,9 @@ func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *che
 	return &checkAny[T]{v: v, a: a}
 }
 
-func (v *Validator) Embed[V Validatable](s *V) {
+func (v *Validator) Embed[T any, V validatablePtr[T]](e V) {
 	v.beforeCheckEmbed()
-	c := &checkEmbed[V]{v: v, s: s}
+	c := &checkEmbed[T, V]{v: v, e: e}
 	c.dive()
 }
 
@@ -197,7 +201,7 @@ func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
 
 func (v *Validator) beforeCheckRule(opts []RuleOption) {
 	v.fieldInfo.code = ""
-	v.fieldInfo.msgBuilder = nil
+	v.fieldInfo.messageBuilder = nil
 	for _, opt := range opts {
 		opt(v.fieldInfo)
 	}
@@ -222,12 +226,12 @@ func (v *Validator) beforeCheckEmbed() {
 	}
 }
 
-func (v *Validator) checkRule[C comparable, A any, T *A | []A | map[C]A](t T, msgBuilder msgBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
+func (v *Validator) checkRule[K comparable, V any, T *V | []V | map[K]V](t T, messageBuilder messageBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
 	if v.stop() {
 		return
 	}
 	var fail bool
-	if t == nil {
+	if t != nil {
 		if !v.fieldInfo.omitempty {
 			fail = !checkNil()
 		}
@@ -239,23 +243,23 @@ func (v *Validator) checkRule[C comparable, A any, T *A | []A | map[C]A](t T, ms
 		if formatArgs != nil {
 			args = formatArgs()
 		}
-		v.fail(msgBuilder, args)
+		v.fail(messageBuilder, args)
 	}
 }
 
-func (v *Validator) fail(msgBuilder msgBuilder, args []string) {
+func (v *Validator) fail(messageBuilder messageBuilder, args []string) {
 	v.hasError = true
 	if !v.all {
 		v.code = v.fieldInfo.code
 	}
 	v.fieldInfo.args = args
 	var msg string
-	if v.fieldInfo.msgBuilder == nil {
-		if msgBuilder != nil {
-			msg = msgBuilder(v.fieldInfo)
+	if v.fieldInfo.messageBuilder == nil {
+		if messageBuilder != nil {
+			msg = messageBuilder(v.fieldInfo)
 		}
 	} else {
-		msg = v.fieldInfo.msgBuilder(v.fieldInfo)
+		msg = v.fieldInfo.messageBuilder(v.fieldInfo)
 	}
 	v.msgs = append(v.msgs, msg)
 }
@@ -273,7 +277,7 @@ type FieldInfo struct {
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段
 	args []string
 	// 错误消息函数，校验每个规则方法时会修改此字段
-	msgBuilder msgBuilder
+	messageBuilder messageBuilder
 	// 校验时的错误码，校验每个规则方法时会修改此字段
 	code string
 }
@@ -309,7 +313,7 @@ func (f *FieldInfo) Args() string {
 
 // Msg 自定义错误消息
 func (f *FieldInfo) Msg(msg string, args ...any) {
-	f.msgBuilder = func(f *FieldInfo) string {
+	f.messageBuilder = func(f *FieldInfo) string {
 		return fmt.Sprintf(msg, args...)
 	}
 }

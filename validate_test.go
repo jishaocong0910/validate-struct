@@ -129,13 +129,14 @@ func TestCheck(t *testing.T) {
 			id:   "1147",
 			name: "name",
 		}
-		code, msg, msgs := validate.Check(nil, u)
+		code, msg, msgs := validate.Check(nil, &u)
 		r.Equal(validate.SUCCESS, code)
 		r.Equal("", msg)
 		r.Nil(msgs)
 	}
 	{
-		code, msg, msgs := validate.Check(nil, (validate.Validatable)(nil))
+		var u demoUser
+		code, msg, msgs := validate.Check(nil, &u)
 		r.Equal("", code)
 		r.Equal("", msg)
 		r.Nil(msgs)

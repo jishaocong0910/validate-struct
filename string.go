@@ -30,7 +30,7 @@ type checkString struct {
 // Required 限制不能为nil
 func (c *checkString) Required(opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderRequired, nil, func() bool {
+	c.v.checkRule[any, string](c.s, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -39,7 +39,7 @@ func (c *checkString) Required(opts ...RuleOption) *checkString {
 // NotBlank 限制不能为空白
 func (c *checkString) NotBlank(opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderNotBlank, nil, func() bool {
+	c.v.checkRule[any, string](c.s, messageNotBlank, nil, func() bool {
 		return false
 	}, func() bool {
 		for _, r := range *c.s {
@@ -55,7 +55,7 @@ func (c *checkString) NotBlank(opts ...RuleOption) *checkString {
 // Regex 限制必须匹配正则
 func (c *checkString) Regex(r *regexp.Regexp, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderRegex, nil, func() bool {
+	c.v.checkRule[any, string](c.s, messageRegex, nil, func() bool {
 		return r.MatchString("")
 	}, func() bool {
 		return r.MatchString(*c.s)
@@ -66,7 +66,7 @@ func (c *checkString) Regex(r *regexp.Regexp, opts ...RuleOption) *checkString {
 // Length 限制字符长度
 func (c *checkString) Length(l int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLength, func() []string {
+	c.v.checkRule[any, string](c.s, messageLength, func() []string {
 		return formatInt(l)
 	}, func() bool {
 		return l == 0
@@ -79,7 +79,7 @@ func (c *checkString) Length(l int, opts ...RuleOption) *checkString {
 // Min 限制字符长度最小值
 func (c *checkString) Min(min int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthMin, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthMin, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min <= 0
@@ -92,7 +92,7 @@ func (c *checkString) Min(min int, opts ...RuleOption) *checkString {
 // Max 限制字符长度最大值
 func (c *checkString) Max(max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthMax, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthMax, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max >= 0
@@ -105,7 +105,7 @@ func (c *checkString) Max(max int, opts ...RuleOption) *checkString {
 // Range 限制字符长度范围（包含边界）
 func (c *checkString) Range(min, max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthRange, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthRange, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -119,7 +119,7 @@ func (c *checkString) Range(min, max int, opts ...RuleOption) *checkString {
 // Gt 限制字符长度必须大于指定值
 func (c *checkString) Gt(min int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthGt, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthGt, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min < 0
@@ -132,7 +132,7 @@ func (c *checkString) Gt(min int, opts ...RuleOption) *checkString {
 // Lt 限制字符长度必须小于指定值
 func (c *checkString) Lt(max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthLt, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthLt, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max > 0
@@ -145,7 +145,7 @@ func (c *checkString) Lt(max int, opts ...RuleOption) *checkString {
 // Within 限制字符串长度范围（不包含边界）
 func (c *checkString) Within(min, max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderLengthWithin, func() []string {
+	c.v.checkRule[any, string](c.s, messageLengthWithin, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -159,7 +159,7 @@ func (c *checkString) Within(min, max int, opts ...RuleOption) *checkString {
 // Enum 限制值必须在指定枚举值中
 func (c *checkString) Enum(enums []string, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderEnum, func() []string {
+	c.v.checkRule[any, string](c.s, messageEnum, func() []string {
 		var args []string
 		for _, e := range enums {
 			args = append(args, "\""+e+"\"")
@@ -176,7 +176,7 @@ func (c *checkString) Enum(enums []string, opts ...RuleOption) *checkString {
 // Custom 自定义校验
 func (c *checkString) Custom(successIfNil bool, custom func(s string) bool, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, string](c.s, msgBuilderDefault, nil, func() bool {
+	c.v.checkRule[any, string](c.s, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.s)

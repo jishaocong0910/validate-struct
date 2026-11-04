@@ -32,7 +32,7 @@ type checkNumber[T number] struct {
 
 func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderRequired, nil, func() bool {
+	c.v.checkRule[any, T](c.n, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -40,7 +40,7 @@ func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderMin, func() []string {
+	c.v.checkRule[any, T](c.n, messageMin, func() []string {
 		return c.formatter(min)
 	}, func() bool {
 		return false
@@ -52,7 +52,7 @@ func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderMax, func() []string {
+	c.v.checkRule[any, T](c.n, messageMax, func() []string {
 		return c.formatter(max)
 	}, func() bool {
 		return true
@@ -64,7 +64,7 @@ func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderRange, func() []string {
+	c.v.checkRule[any, T](c.n, messageRange, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false
@@ -76,7 +76,7 @@ func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderGt, func() []string {
+	c.v.checkRule[any, T](c.n, messageGt, func() []string {
 		return c.formatter(min)
 	}, func() bool {
 		return false
@@ -88,7 +88,7 @@ func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderLt, func() []string {
+	c.v.checkRule[any, T](c.n, messageLt, func() []string {
 		return c.formatter(max)
 	}, func() bool {
 		return true
@@ -100,7 +100,7 @@ func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderWithin, func() []string {
+	c.v.checkRule[any, T](c.n, messageWithin, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false
@@ -112,7 +112,7 @@ func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] 
 
 func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderEnum, func() []string {
+	c.v.checkRule[any, T](c.n, messageEnum, func() []string {
 		return c.formatter(enums...)
 	}, func() bool {
 		return false
@@ -124,7 +124,7 @@ func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Custom(successIfNil bool, custom func(n T) bool, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.n, msgBuilderDefault, nil,
+	c.v.checkRule[any, T](c.n, messageDefault, nil,
 		func() bool {
 			return successIfNil
 		}, func() bool {

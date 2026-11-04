@@ -25,7 +25,7 @@ type checkSlice[T any] struct {
 // Required 限制不能为nil
 func (c *checkSlice[T]) Required(opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderRequired, nil, func() bool {
+	c.v.checkRule[any, T](c.s, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -34,7 +34,7 @@ func (c *checkSlice[T]) Required(opts ...RuleOption) *checkSlice[T] {
 // NotEmpty 限制不能为空
 func (c *checkSlice[T]) NotEmpty(opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderNotEmpty, nil, func() bool {
+	c.v.checkRule[any, T](c.s, messageNotEmpty, nil, func() bool {
 		return false
 	}, func() bool {
 		return len(c.s) != 0
@@ -45,7 +45,7 @@ func (c *checkSlice[T]) NotEmpty(opts ...RuleOption) *checkSlice[T] {
 // Length 限制长度范围
 func (c *checkSlice[T]) Length(l int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLength, func() []string {
+	c.v.checkRule[any, T](c.s, messageLength, func() []string {
 		return formatInt(l)
 	}, func() bool {
 		return l == 0
@@ -58,7 +58,7 @@ func (c *checkSlice[T]) Length(l int, opts ...RuleOption) *checkSlice[T] {
 // Min 限制长度最小值
 func (c *checkSlice[T]) Min(min int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthMin, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthMin, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min <= 0
@@ -71,7 +71,7 @@ func (c *checkSlice[T]) Min(min int, opts ...RuleOption) *checkSlice[T] {
 // Max 限制长度最大值
 func (c *checkSlice[T]) Max(max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthMax, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthMax, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max >= 0
@@ -84,7 +84,7 @@ func (c *checkSlice[T]) Max(max int, opts ...RuleOption) *checkSlice[T] {
 // Range 限制长度范围（包含边界）
 func (c *checkSlice[T]) Range(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthRange, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthRange, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -98,7 +98,7 @@ func (c *checkSlice[T]) Range(min, max int, opts ...RuleOption) *checkSlice[T] {
 // Gt 限制长度必须大于指定值
 func (c *checkSlice[T]) Gt(min int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthGt, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthGt, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min < 0
@@ -111,7 +111,7 @@ func (c *checkSlice[T]) Gt(min int, opts ...RuleOption) *checkSlice[T] {
 // Lt 限制长度必须小于指定值
 func (c *checkSlice[T]) Lt(max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthLt, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthLt, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max > 0
@@ -124,7 +124,7 @@ func (c *checkSlice[T]) Lt(max int, opts ...RuleOption) *checkSlice[T] {
 // Within 限制长度范围（不包含边界）
 func (c *checkSlice[T]) Within(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderLengthWithin, func() []string {
+	c.v.checkRule[any, T](c.s, messageLengthWithin, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -138,7 +138,7 @@ func (c *checkSlice[T]) Within(min, max int, opts ...RuleOption) *checkSlice[T] 
 // Custom 自定义校验
 func (c *checkSlice[T]) Custom(successIfNil bool, custom func(s []T) bool, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[int, T](c.s, msgBuilderDefault, nil, func() bool {
+	c.v.checkRule[any, T](c.s, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(c.s)

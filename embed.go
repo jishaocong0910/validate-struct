@@ -14,13 +14,13 @@
 
 package validate
 
-type checkEmbed[V Validatable] struct {
+type checkEmbed[T any, V validatablePtr[T]] struct {
 	v *Validator
-	s *V
+	e V
 }
 
-func (c *checkEmbed[V]) dive() {
-	if c.s != nil {
-		(*c.s).Checklist(c.v)
+func (c *checkEmbed[T, V]) dive() {
+	if c.e != nil {
+		c.e.Checklist(c.v)
 	}
 }

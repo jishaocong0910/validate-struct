@@ -45,8 +45,8 @@ func Code(code string) RuleOption {
 }
 
 // Msg 自定义错误消息
-func Msg(msgBuilder msgBuilder) RuleOption {
+func Msg(messageBuilder messageBuilder) RuleOption {
 	return func(o *FieldInfo) {
-		o.msgBuilder = msgBuilder
+		o.messageBuilder = messageBuilder
 	}
 }
