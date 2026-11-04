@@ -253,7 +253,7 @@ func (b *Book) Checklist(vc *validate.VContext) {
 ```go
 func (b *Book) Checklist(vc *validate.VContext) {
     v.String( &b.Title, "title").Max(10, validate.Msg(func(f *validate.FieldInfo) {
-        f.Msg("%s exceeds max length %s", f.FieldName(), f.Confine(0))
+        return fmt.Sprintf("%s exceeds max length %s", f.FieldName(), f.Confine(0))
     }))
 }
 ```
@@ -270,7 +270,7 @@ func (b *Book) Checklist(vc *validate.VContext) {
         <td>返回<i>规则方法</i>的指定索引的限制值的字符串形式。例如：对于<i>Max(10)</i>，<i>vc.Confine(0)</i>返回<i>"10"</i>；对于<i>Range(5, 15)</i>，<i>vc.Confine(0)</i>返回<i>"5"</i>，<i>vc.Confine(1)</i>返回<i>"15"</i>。</td>
     </tr>
     <tr>
-        <td>Confines</td>
+        <td>args</td>
         <td>返回<i>规则方法</i>的所有限制值的字符串形式，用","拼接，若数量超过两个，则最后一个用"or"拼接。例如：对于<i>Enum("zh-cn", "en-US")</i>，返回"zh-cn, en-US"；对于<i>Enum("zh-cn", "en-US", "ja-JP")</i>，返回"zh-cn, en-US or ja-JP"。</td>
     </tr>
 </table>

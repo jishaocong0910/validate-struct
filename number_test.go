@@ -152,26 +152,26 @@ func TestCheckNumber_Custom(t *testing.T) {
 	})
 }
 
-func TestNumberToConfine(t *testing.T) {
+func TestFormatNumber(t *testing.T) {
 	r := require.New(t)
-	testNumberToConfine(r, validate.IntToConfine)
-	testNumberToConfine(r, validate.Int8ToConfine)
-	testNumberToConfine(r, validate.Int16ToConfine)
-	testNumberToConfine(r, validate.Int32ToConfine)
-	testNumberToConfine(r, validate.Int64ToConfine)
-	testNumberToConfine(r, validate.UintToConfine)
-	testNumberToConfine(r, validate.Uint8ToConfine)
-	testNumberToConfine(r, validate.Uint16ToConfine)
-	testNumberToConfine(r, validate.Uint32ToConfine)
-	testNumberToConfine(r, validate.Uint64ToConfine)
-	testNumberToConfine(r, validate.Float32ToConfine)
-	testNumberToConfine(r, validate.Float64ToConfine)
+	testFormatNumber(r, validate.FormatInt)
+	testFormatNumber(r, validate.FormatInt8)
+	testFormatNumber(r, validate.FormatInt16)
+	testFormatNumber(r, validate.FormatInt32)
+	testFormatNumber(r, validate.FormatInt64)
+	testFormatNumber(r, validate.FormatUint)
+	testFormatNumber(r, validate.FormatUint8)
+	testFormatNumber(r, validate.FormatUint16)
+	testFormatNumber(r, validate.FormatUint32)
+	testFormatNumber(r, validate.FormatUint64)
+	testFormatNumber(r, validate.FormatFloat32)
+	testFormatNumber(r, validate.FormatFloat64)
 }
 
-func testNumberToConfine[T validate.Number](r *require.Assertions, ntsf func(t ...T) []string) {
-	confines := ntsf(1, 20, 100)
-	r.Len(confines, 3)
-	r.Contains(confines, "1")
-	r.Contains(confines, "20")
-	r.Contains(confines, "100")
+func testFormatNumber[T validate.Number](r *require.Assertions, formatNumber func(t ...T) []string) {
+	args := formatNumber(1, 20, 100)
+	r.Len(args, 3)
+	r.Contains(args, "1")
+	r.Contains(args, "20")
+	r.Contains(args, "100")
 }

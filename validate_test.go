@@ -15,13 +15,14 @@
 package validate_test
 
 import (
+	"fmt"
 	"testing"
 
 	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
-func TestApplyRule(t *testing.T) {
+func TestCheckRule(t *testing.T) {
 	r := require.New(t)
 	{
 		// 成功
@@ -38,8 +39,8 @@ func TestApplyRule(t *testing.T) {
 		// 指定code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, new(5), []validate.CheckOption{validate.Code("MY_CODE"), validate.Msg(func(b *validate.FieldInfo) {
-			b.Msg("%s %s", b.FieldName(), b.Confines())
+		validate.CheckRule(v, new(5), []validate.RuleOption{validate.Code("MY_CODE"), validate.Msg(func(b *validate.FieldInfo) string {
+			return fmt.Sprintf("%s %s", b.FieldName(), b.Args())
 		})}, func() []string {
 			return []string{"a", "b", "c"}
 		}, func() bool {
@@ -79,7 +80,7 @@ func TestApplyRule(t *testing.T) {
 	{
 		// 忽略nil
 		v := validate.NewValidator()
-		validate.SetOmittable(v)
+		validate.SetOmitempty(v)
 		validate.CheckRule(v, (*int)(nil), nil, nil, func() bool {
 			return false
 		}, func() bool {
@@ -91,8 +92,8 @@ func TestApplyRule(t *testing.T) {
 	{
 		// 中断
 		v := validate.NewValidator()
-		validate.SetHasWrong(v)
-		validate.CheckRule(v, (*int)(nil), []validate.CheckOption{validate.Code("MY_CODE")}, nil, func() bool {
+		validate.SetHasError(v)
+		validate.CheckRule(v, (*int)(nil), []validate.RuleOption{validate.Code("MY_CODE")}, nil, func() bool {
 			return false
 		}, func() bool {
 			return false

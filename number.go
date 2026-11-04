@@ -22,24 +22,26 @@ type number interface {
 	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64
 }
 
-type formatNumber[T number] func(t ...T) []string
+type numberFormatter[T number] func(t ...T) []string
 
 type checkNumber[T number] struct {
-	v            *Validator
-	n            *T
-	formatNumber formatNumber[T]
+	v         *Validator
+	n         *T
+	formatter numberFormatter[T]
 }
 
 func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderRequired, nil, func() bool {
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
 }
 
 func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderMin, func() []string {
-		return c.formatNumber(min)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderMin, func() []string {
+		return c.formatter(min)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -49,8 +51,9 @@ func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderMax, func() []string {
-		return c.formatNumber(max)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderMax, func() []string {
+		return c.formatter(max)
 	}, func() bool {
 		return true
 	}, func() bool {
@@ -60,8 +63,9 @@ func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderRange, func() []string {
-		return c.formatNumber(min, max)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderRange, func() []string {
+		return c.formatter(min, max)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -71,8 +75,9 @@ func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderGt, func() []string {
-		return c.formatNumber(min)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderGt, func() []string {
+		return c.formatter(min)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -82,8 +87,9 @@ func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderLt, func() []string {
-		return c.formatNumber(max)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderLt, func() []string {
+		return c.formatter(max)
 	}, func() bool {
 		return true
 	}, func() bool {
@@ -93,8 +99,9 @@ func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderWithin, func() []string {
-		return c.formatNumber(min, max)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderWithin, func() []string {
+		return c.formatter(min, max)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -104,8 +111,9 @@ func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] 
 }
 
 func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderEnum, func() []string {
-		return c.formatNumber(enums...)
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderEnum, func() []string {
+		return c.formatter(enums...)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -115,7 +123,8 @@ func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 }
 
 func (c *checkNumber[T]) Custom(successIfNil bool, custom func(n T) bool, opts ...RuleOption) *checkNumber[T] {
-	c.v.checkRule[int, T](c.n, opts, msgBuilderDefault, nil,
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, T](c.n, msgBuilderDefault, nil,
 		func() bool {
 			return successIfNil
 		}, func() bool {
@@ -215,7 +224,7 @@ func formatFloat32(ff ...float32) []string {
 func formatFloat64(ff ...float64) []string {
 	result := make([]string, 0, len(ff))
 	for _, f := range ff {
-		result = append(result, strconv.FormatFloat(f, 'f', -1, 32))
+		result = append(result, strconv.FormatFloat(f, 'f', -1, 64))
 	}
 	return result
 }

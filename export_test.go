@@ -35,7 +35,7 @@ func GetResult(v *Validator) (code string, msg string, msgs []string) {
 	return
 }
 
-func SetHasWrong(v *Validator) {
+func SetHasError(v *Validator) {
 	v.hasError = true
 }
 
@@ -47,62 +47,61 @@ func SetFieldName(v *Validator, fieldName string) {
 	v.fieldInfo.fieldName = fieldName
 }
 
-func SetOmittable(v *Validator) {
+func SetOmitempty(v *Validator) {
 	Omitempty()(v.fieldInfo)
 }
 
-func CheckRule[T any](v *Validator, t *T, opts []RuleOption, confineFunc func() []string, checkNil func() bool, checkNonNil func() bool) {
-	v.checkRule[int, T](t, opts, msgBuilderDefault, confineFunc, checkNil, checkNonNil)
+func CheckRule[T any](v *Validator, t *T, opts []RuleOption, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
+	v.beforeCheckRule(opts)
+	v.checkRule[int, T](t, msgBuilderDefault, formatArgs, checkNil, checkNonNil)
 }
 
 type Number = number
 
-type CheckOption = RuleOption
-
-func IntToConfine(confines ...int) []string {
-	return formatInt(confines...)
+func FormatInt(args ...int) []string {
+	return formatInt(args...)
 }
 
-func Int8ToConfine(confines ...int8) []string {
-	return formatInt8(confines...)
+func FormatInt8(args ...int8) []string {
+	return formatInt8(args...)
 }
 
-func Int16ToConfine(confines ...int16) []string {
-	return formatInt16(confines...)
+func FormatInt16(args ...int16) []string {
+	return formatInt16(args...)
 }
 
-func Int32ToConfine(confines ...int32) []string {
-	return formatInt32(confines...)
+func FormatInt32(args ...int32) []string {
+	return formatInt32(args...)
 }
 
-func Int64ToConfine(confines ...int64) []string {
-	return formatInt64(confines...)
+func FormatInt64(args ...int64) []string {
+	return formatInt64(args...)
 }
 
-func UintToConfine(confines ...uint) []string {
-	return formatUint(confines...)
+func FormatUint(args ...uint) []string {
+	return formatUint(args...)
 }
 
-func Uint8ToConfine(confines ...uint8) []string {
-	return formatUint8(confines...)
+func FormatUint8(args ...uint8) []string {
+	return formatUint8(args...)
 }
 
-func Uint16ToConfine(confines ...uint16) []string {
-	return formatUint16(confines...)
+func FormatUint16(args ...uint16) []string {
+	return formatUint16(args...)
 }
 
-func Uint32ToConfine(confines ...uint32) []string {
-	return formatUint32(confines...)
+func FormatUint32(args ...uint32) []string {
+	return formatUint32(args...)
 }
 
-func Uint64ToConfine(confines ...uint64) []string {
-	return formatUint64(confines...)
+func FormatUint64(args ...uint64) []string {
+	return formatUint64(args...)
 }
 
-func Float32ToConfine(confines ...float32) []string {
-	return formatFloat32(confines...)
+func FormatFloat32(args ...float32) []string {
+	return formatFloat32(args...)
 }
 
-func Float64ToConfine(confines ...float64) []string {
-	return formatFloat64(confines...)
+func FormatFloat64(args ...float64) []string {
+	return formatFloat64(args...)
 }

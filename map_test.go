@@ -201,7 +201,7 @@ func TestCheckMap_Custom(t *testing.T) {
 	})
 }
 
-func TestCheckMap_Interrupt(t *testing.T) {
+func TestCheckMap_Stop(t *testing.T) {
 	r := require.New(t)
 	{
 		v := validate.NewValidator()
@@ -236,7 +236,7 @@ func TestCheckMap_Interrupt(t *testing.T) {
 	}
 	{
 		v := validate.NewValidator()
-		validate.SetHasWrong(v)
+		validate.SetHasError(v)
 		v.Map(map[string]int{"a": 11, "b": 11}, "param").Dive(func(k string) {
 			v.String(&k, "").Lt(3)
 		}, func(value int) {

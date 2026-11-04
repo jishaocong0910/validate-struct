@@ -22,7 +22,8 @@ type checkStruct[V Validatable] struct {
 
 // Required 限制不能为nil
 func (c *checkStruct[V]) Required(opts ...RuleOption) *checkStruct[V] {
-	c.v.checkRule[int, V](c.s, opts, msgBuilderRequired, nil, func() bool {
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, V](c.s, msgBuilderRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -30,7 +31,8 @@ func (c *checkStruct[V]) Required(opts ...RuleOption) *checkStruct[V] {
 
 // Custom 自定义校验
 func (c *checkStruct[V]) Custom(successIfNil bool, custom func(s V) bool, opts ...RuleOption) *checkStruct[V] {
-	c.v.checkRule[int, V](c.s, opts, msgBuilderDefault, nil, func() bool {
+	c.v.beforeCheckRule(opts)
+	c.v.checkRule[int, V](c.s, msgBuilderDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.s)

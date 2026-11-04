@@ -195,7 +195,7 @@ func TestCheckSlice_Custom(t *testing.T) {
 	})
 }
 
-func TestCheckSlice_Interrupt(t *testing.T) {
+func TestCheckSlice_Stop(t *testing.T) {
 	r := require.New(t)
 	{
 		v := validate.NewValidator()
@@ -219,7 +219,7 @@ func TestCheckSlice_Interrupt(t *testing.T) {
 	}
 	{
 		v := validate.NewValidator()
-		validate.SetHasWrong(v)
+		validate.SetHasError(v)
 		v.Slice([]int{8, 3}, "param").Dive(func(t int) {
 			v.Int(&t, "").Lt(7).Gt(4)
 		})
