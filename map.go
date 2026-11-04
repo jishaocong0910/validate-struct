@@ -41,7 +41,7 @@ func (c *checkMap[K, V]) NotEmpty(opts ...RuleOption) *checkMap[K, V] {
 // Length 限制长度必须为指定值
 func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLength, func() []string {
-		return intToStr(l)
+		return formatInt(l)
 	}, func() bool {
 		return l == 0
 	}, func() bool {
@@ -53,7 +53,7 @@ func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 // Min 限制最小长度
 func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthMin, func() []string {
-		return intToStr(min)
+		return formatInt(min)
 	}, func() bool {
 		return min <= 0
 	}, func() bool {
@@ -65,7 +65,7 @@ func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 // Max 限制最大长度
 func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthMax, func() []string {
-		return intToStr(max)
+		return formatInt(max)
 	}, func() bool {
 		return max >= 0
 	}, func() bool {
@@ -77,7 +77,7 @@ func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 // Range 限制长度范围（包含边界）
 func (c *checkMap[K, V]) Range(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthRange, func() []string {
-		return intToStr(min, max)
+		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
 	}, func() bool {
@@ -90,7 +90,7 @@ func (c *checkMap[K, V]) Range(min, max int, opts ...RuleOption) *checkMap[K, V]
 // Gt 限制长度必须大于指定值
 func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthGt, func() []string {
-		return intToStr(min)
+		return formatInt(min)
 	}, func() bool {
 		return min < 0
 	}, func() bool {
@@ -102,7 +102,7 @@ func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 // Lt 限制长度必须小于指定值
 func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthLt, func() []string {
-		return intToStr(max)
+		return formatInt(max)
 	}, func() bool {
 		return max > 0
 	}, func() bool {
@@ -114,7 +114,7 @@ func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 // Within 限制长度范围（不包含边界）
 func (c *checkMap[K, V]) Within(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.checkRule[K, V](c.m, opts, msgBuilderLengthWithin, func() []string {
-		return intToStr(min, max)
+		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
 	}, func() bool {

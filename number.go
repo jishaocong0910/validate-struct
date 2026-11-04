@@ -22,12 +22,12 @@ type number interface {
 	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64
 }
 
-type numberFormatter[T number] func(t ...T) []string
+type formatNumber[T number] func(t ...T) []string
 
 type checkNumber[T number] struct {
-	v               *Validator
-	n               *T
-	numberFormatter numberFormatter[T]
+	v            *Validator
+	n            *T
+	formatNumber formatNumber[T]
 }
 
 func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
@@ -39,7 +39,7 @@ func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderMin, func() []string {
-		return c.numberFormatter(min)
+		return c.formatNumber(min)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -50,7 +50,7 @@ func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderMax, func() []string {
-		return c.numberFormatter(max)
+		return c.formatNumber(max)
 	}, func() bool {
 		return true
 	}, func() bool {
@@ -61,7 +61,7 @@ func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderRange, func() []string {
-		return c.numberFormatter(min, max)
+		return c.formatNumber(min, max)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -72,7 +72,7 @@ func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderGt, func() []string {
-		return c.numberFormatter(min)
+		return c.formatNumber(min)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -83,7 +83,7 @@ func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderLt, func() []string {
-		return c.numberFormatter(max)
+		return c.formatNumber(max)
 	}, func() bool {
 		return true
 	}, func() bool {
@@ -94,7 +94,7 @@ func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderWithin, func() []string {
-		return c.numberFormatter(min, max)
+		return c.formatNumber(min, max)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -105,7 +105,7 @@ func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] 
 
 func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 	c.v.checkRule[int, T](c.n, opts, msgBuilderEnum, func() []string {
-		return c.numberFormatter(enums...)
+		return c.formatNumber(enums...)
 	}, func() bool {
 		return false
 	}, func() bool {
@@ -124,7 +124,7 @@ func (c *checkNumber[T]) Custom(successIfNil bool, custom func(n T) bool, opts .
 	return c
 }
 
-func intToStr(ii ...int) []string {
+func formatInt(ii ...int) []string {
 	result := make([]string, 0, len(ii))
 	for _, i := range ii {
 		result = append(result, strconv.FormatInt(int64(i), 10))
@@ -132,7 +132,7 @@ func intToStr(ii ...int) []string {
 	return result
 }
 
-func int8ToStr(ii ...int8) []string {
+func formatInt8(ii ...int8) []string {
 	result := make([]string, 0, len(ii))
 	for _, i := range ii {
 		result = append(result, strconv.FormatInt(int64(i), 10))
@@ -140,7 +140,7 @@ func int8ToStr(ii ...int8) []string {
 	return result
 }
 
-func int16ToStr(ii ...int16) []string {
+func formatInt16(ii ...int16) []string {
 	result := make([]string, 0, len(ii))
 	for _, i := range ii {
 		result = append(result, strconv.FormatInt(int64(i), 10))
@@ -148,7 +148,7 @@ func int16ToStr(ii ...int16) []string {
 	return result
 }
 
-func int32ToStr(ii ...int32) []string {
+func formatInt32(ii ...int32) []string {
 	result := make([]string, 0, len(ii))
 	for _, i := range ii {
 		result = append(result, strconv.FormatInt(int64(i), 10))
@@ -156,7 +156,7 @@ func int32ToStr(ii ...int32) []string {
 	return result
 }
 
-func int64ToStr(ii ...int64) []string {
+func formatInt64(ii ...int64) []string {
 	result := make([]string, 0, len(ii))
 	for _, i := range ii {
 		result = append(result, strconv.FormatInt(i, 10))
@@ -164,7 +164,7 @@ func int64ToStr(ii ...int64) []string {
 	return result
 }
 
-func uintToStr(uu ...uint) []string {
+func formatUint(uu ...uint) []string {
 	result := make([]string, 0, len(uu))
 	for _, u := range uu {
 		result = append(result, strconv.FormatUint(uint64(u), 10))
@@ -172,7 +172,7 @@ func uintToStr(uu ...uint) []string {
 	return result
 }
 
-func uint8ToStr(uu ...uint8) []string {
+func formatUint8(uu ...uint8) []string {
 	result := make([]string, 0, len(uu))
 	for _, u := range uu {
 		result = append(result, strconv.FormatUint(uint64(u), 10))
@@ -180,7 +180,7 @@ func uint8ToStr(uu ...uint8) []string {
 	return result
 }
 
-func uint16ToStr(uu ...uint16) []string {
+func formatUint16(uu ...uint16) []string {
 	result := make([]string, 0, len(uu))
 	for _, u := range uu {
 		result = append(result, strconv.FormatUint(uint64(u), 10))
@@ -188,7 +188,7 @@ func uint16ToStr(uu ...uint16) []string {
 	return result
 }
 
-func uint32ToStr(uu ...uint32) []string {
+func formatUint32(uu ...uint32) []string {
 	result := make([]string, 0, len(uu))
 	for _, u := range uu {
 		result = append(result, strconv.FormatUint(uint64(u), 10))
@@ -196,7 +196,7 @@ func uint32ToStr(uu ...uint32) []string {
 	return result
 }
 
-func uint64ToStr(uu ...uint64) []string {
+func formatUint64(uu ...uint64) []string {
 	result := make([]string, 0, len(uu))
 	for _, u := range uu {
 		result = append(result, strconv.FormatUint(u, 10))
@@ -204,7 +204,7 @@ func uint64ToStr(uu ...uint64) []string {
 	return result
 }
 
-func float32ToStr(ff ...float32) []string {
+func formatFloat32(ff ...float32) []string {
 	result := make([]string, 0, len(ff))
 	for _, f := range ff {
 		result = append(result, strconv.FormatFloat(float64(f), 'f', -1, 32))
@@ -212,7 +212,7 @@ func float32ToStr(ff ...float32) []string {
 	return result
 }
 
-func float64ToStr(ff ...float64) []string {
+func formatFloat64(ff ...float64) []string {
 	result := make([]string, 0, len(ff))
 	for _, f := range ff {
 		result = append(result, strconv.FormatFloat(f, 'f', -1, 32))

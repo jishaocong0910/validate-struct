@@ -80,67 +80,67 @@ func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkB
 
 func (v *Validator) Byte(b *byte, fieldName string, opts ...FieldOption) *checkNumber[byte] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[byte]{v: v, n: b, numberFormatter: uint8ToStr}
+	return &checkNumber[byte]{v: v, n: b, formatNumber: formatUint8}
 }
 
 func (v *Validator) Int(i *int, fieldName string, opts ...FieldOption) *checkNumber[int] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int]{v: v, n: i, numberFormatter: intToStr}
+	return &checkNumber[int]{v: v, n: i, formatNumber: formatInt}
 }
 
 func (v *Validator) Int8(i *int8, fieldName string, opts ...FieldOption) *checkNumber[int8] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int8]{v: v, n: i, numberFormatter: int8ToStr}
+	return &checkNumber[int8]{v: v, n: i, formatNumber: formatInt8}
 }
 
 func (v *Validator) Int16(i *int16, fieldName string, opts ...FieldOption) *checkNumber[int16] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int16]{v: v, n: i, numberFormatter: int16ToStr}
+	return &checkNumber[int16]{v: v, n: i, formatNumber: formatInt16}
 }
 
 func (v *Validator) Int32(i *int32, fieldName string, opts ...FieldOption) *checkNumber[int32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int32]{v: v, n: i, numberFormatter: int32ToStr}
+	return &checkNumber[int32]{v: v, n: i, formatNumber: formatInt32}
 }
 
 func (v *Validator) Int64(i *int64, fieldName string, opts ...FieldOption) *checkNumber[int64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int64]{v: v, n: i, numberFormatter: int64ToStr}
+	return &checkNumber[int64]{v: v, n: i, formatNumber: formatInt64}
 }
 
 func (v *Validator) Uint(u *uint, fieldName string, opts ...FieldOption) *checkNumber[uint] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint]{v: v, n: u, numberFormatter: uintToStr}
+	return &checkNumber[uint]{v: v, n: u, formatNumber: formatUint}
 }
 
 func (v *Validator) Uint8(u *uint8, fieldName string, opts ...FieldOption) *checkNumber[uint8] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint8]{v: v, n: u, numberFormatter: uint8ToStr}
+	return &checkNumber[uint8]{v: v, n: u, formatNumber: formatUint8}
 }
 
 func (v *Validator) Uint16(u *uint16, fieldName string, opts ...FieldOption) *checkNumber[uint16] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint16]{v: v, n: u, numberFormatter: uint16ToStr}
+	return &checkNumber[uint16]{v: v, n: u, formatNumber: formatUint16}
 }
 
 func (v *Validator) Uint32(u *uint32, fieldName string, opts ...FieldOption) *checkNumber[uint32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint32]{v: v, n: u, numberFormatter: uint32ToStr}
+	return &checkNumber[uint32]{v: v, n: u, formatNumber: formatUint32}
 }
 
 func (v *Validator) Uint64(u *uint64, fieldName string, opts ...FieldOption) *checkNumber[uint64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint64]{v: v, n: u, numberFormatter: uint64ToStr}
+	return &checkNumber[uint64]{v: v, n: u, formatNumber: formatUint64}
 }
 
 func (v *Validator) Float32(f *float32, fieldName string, opts ...FieldOption) *checkNumber[float32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[float32]{v: v, n: f, numberFormatter: float32ToStr}
+	return &checkNumber[float32]{v: v, n: f, formatNumber: formatFloat32}
 }
 
 func (v *Validator) Float64(f *float64, fieldName string, opts ...FieldOption) *checkNumber[float64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[float64]{v: v, n: f, numberFormatter: float64ToStr}
+	return &checkNumber[float64]{v: v, n: f, formatNumber: formatFloat64}
 }
 
 func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *checkString {

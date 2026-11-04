@@ -62,7 +62,7 @@ func (c *checkString) Regex(r *regexp.Regexp, opts ...RuleOption) *checkString {
 // Length 限制字符长度
 func (c *checkString) Length(l int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLength, func() []string {
-		return intToStr(l)
+		return formatInt(l)
 	}, func() bool {
 		return l == 0
 	}, func() bool {
@@ -74,7 +74,7 @@ func (c *checkString) Length(l int, opts ...RuleOption) *checkString {
 // Min 限制字符长度最小值
 func (c *checkString) Min(min int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthMin, func() []string {
-		return intToStr(min)
+		return formatInt(min)
 	}, func() bool {
 		return min <= 0
 	}, func() bool {
@@ -86,7 +86,7 @@ func (c *checkString) Min(min int, opts ...RuleOption) *checkString {
 // Max 限制字符长度最大值
 func (c *checkString) Max(max int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthMax, func() []string {
-		return intToStr(max)
+		return formatInt(max)
 	}, func() bool {
 		return max >= 0
 	}, func() bool {
@@ -98,7 +98,7 @@ func (c *checkString) Max(max int, opts ...RuleOption) *checkString {
 // Range 限制字符长度范围（包含边界）
 func (c *checkString) Range(min, max int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthRange, func() []string {
-		return intToStr(min, max)
+		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
 	}, func() bool {
@@ -111,7 +111,7 @@ func (c *checkString) Range(min, max int, opts ...RuleOption) *checkString {
 // Gt 限制字符长度必须大于指定值
 func (c *checkString) Gt(min int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthGt, func() []string {
-		return intToStr(min)
+		return formatInt(min)
 	}, func() bool {
 		return min < 0
 	}, func() bool {
@@ -123,7 +123,7 @@ func (c *checkString) Gt(min int, opts ...RuleOption) *checkString {
 // Lt 限制字符长度必须小于指定值
 func (c *checkString) Lt(max int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthLt, func() []string {
-		return intToStr(max)
+		return formatInt(max)
 	}, func() bool {
 		return max > 0
 	}, func() bool {
@@ -135,7 +135,7 @@ func (c *checkString) Lt(max int, opts ...RuleOption) *checkString {
 // Within 限制字符串长度范围（不包含边界）
 func (c *checkString) Within(min, max int, opts ...RuleOption) *checkString {
 	c.v.checkRule[int, string](c.s, opts, msgBuilderLengthWithin, func() []string {
-		return intToStr(min, max)
+		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
 	}, func() bool {

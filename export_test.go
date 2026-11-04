@@ -60,49 +60,49 @@ type Number = number
 type CheckOption = RuleOption
 
 func IntToConfine(confines ...int) []string {
-	return intToStr(confines...)
+	return formatInt(confines...)
 }
 
 func Int8ToConfine(confines ...int8) []string {
-	return int8ToStr(confines...)
+	return formatInt8(confines...)
 }
 
 func Int16ToConfine(confines ...int16) []string {
-	return int16ToStr(confines...)
+	return formatInt16(confines...)
 }
 
 func Int32ToConfine(confines ...int32) []string {
-	return int32ToStr(confines...)
+	return formatInt32(confines...)
 }
 
 func Int64ToConfine(confines ...int64) []string {
-	return int64ToStr(confines...)
+	return formatInt64(confines...)
 }
 
 func UintToConfine(confines ...uint) []string {
-	return uintToStr(confines...)
+	return formatUint(confines...)
 }
 
 func Uint8ToConfine(confines ...uint8) []string {
-	return uint8ToStr(confines...)
+	return formatUint8(confines...)
 }
 
 func Uint16ToConfine(confines ...uint16) []string {
-	return uint16ToStr(confines...)
+	return formatUint16(confines...)
 }
 
 func Uint32ToConfine(confines ...uint32) []string {
-	return uint32ToStr(confines...)
+	return formatUint32(confines...)
 }
 
 func Uint64ToConfine(confines ...uint64) []string {
-	return uint64ToStr(confines...)
+	return formatUint64(confines...)
 }
 
 func Float32ToConfine(confines ...float32) []string {
-	return float32ToStr(confines...)
+	return formatFloat32(confines...)
 }
 
 func Float64ToConfine(confines ...float64) []string {
-	return float64ToStr(confines...)
+	return formatFloat64(confines...)
 }
