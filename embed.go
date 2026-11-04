@@ -20,6 +20,9 @@ type checkEmbed[T any, V validatablePtr[T]] struct {
 }
 
 func (c *checkEmbed[T, V]) dive() {
+	if c.v.stop() {
+		return
+	}
 	if c.e != nil {
 		c.e.Checklist(c.v)
 	}

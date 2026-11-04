@@ -16,7 +16,6 @@ package validate
 
 import (
 	"context"
-	"fmt"
 	"strings"
 )
 
@@ -309,11 +308,4 @@ func (f *FieldInfo) Args() string {
 		builder.WriteString(f.args[l-1])
 	}
 	return builder.String()
-}
-
-// Msg 自定义错误消息
-func (f *FieldInfo) Msg(msg string, args ...any) {
-	f.messageBuilder = func(f *FieldInfo) string {
-		return fmt.Sprintf(msg, args...)
-	}
 }
