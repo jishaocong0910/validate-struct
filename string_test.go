@@ -222,11 +222,11 @@ func TestCheckString_Enum(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
 		v.String(new("d"), "param").Enum([]string{"a", "b", "c"})
-	}, `param must be "a", "b" or "c"`)
+	}, `param must be "a", "b", or "c"`)
 	testSuccess(r, func(v *validate.Validator) {
 		v.String(new("c"), "param").Enum([]string{"a", "b", "c"})
 	})
 	testFail(r, func(v *validate.Validator) {
 		v.String((*string)(nil), "param").Enum([]string{"a", "b", "c"})
-	}, `param must be "a", "b" or "c"`)
+	}, `param must be "a", "b", or "c"`)
 }

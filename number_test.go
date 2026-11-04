@@ -119,13 +119,13 @@ func TestCheckNumber_Enum(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{1, 2, 3})
-	}, "param must be 1, 2 or 3")
+	}, "param must be 1, 2, or 3")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{3, 4, 5})
 	})
 	testFail(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").Enum([]int{1, 2, 3})
-	}, "param must be 1, 2 or 3")
+	}, "param must be 1, 2, or 3")
 }
 
 func TestCheckNumber_Custom(t *testing.T) {

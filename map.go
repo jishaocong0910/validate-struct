@@ -23,7 +23,7 @@ type checkMap[K comparable, V any] struct {
 // Required 限制不能为nil
 func (c *checkMap[K, V]) Required(opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageRequired, nil, func() bool {
+	c.v.checkRule(c.m == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -32,7 +32,7 @@ func (c *checkMap[K, V]) Required(opts ...RuleOption) *checkMap[K, V] {
 // NotEmpty 限制不能为空
 func (c *checkMap[K, V]) NotEmpty(opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageNotEmpty, nil, func() bool {
+	c.v.checkRule(c.m == nil, messageNotEmpty, nil, func() bool {
 		return false
 	}, func() bool {
 		return len(c.m) > 0
@@ -43,7 +43,7 @@ func (c *checkMap[K, V]) NotEmpty(opts ...RuleOption) *checkMap[K, V] {
 // Length 限制长度必须为指定值
 func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLength, func() []string {
+	c.v.checkRule(c.m == nil, messageLength, func() []string {
 		return formatInt(l)
 	}, func() bool {
 		return l == 0
@@ -56,7 +56,7 @@ func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 // Min 限制最小长度
 func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthMin, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthMin, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min <= 0
@@ -69,7 +69,7 @@ func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 // Max 限制最大长度
 func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthMax, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthMax, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max >= 0
@@ -82,7 +82,7 @@ func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 // Range 限制长度范围（包含边界）
 func (c *checkMap[K, V]) Range(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthRange, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthRange, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -96,7 +96,7 @@ func (c *checkMap[K, V]) Range(min, max int, opts ...RuleOption) *checkMap[K, V]
 // Gt 限制长度必须大于指定值
 func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthGt, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthGt, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min < 0
@@ -109,7 +109,7 @@ func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 // Lt 限制长度必须小于指定值
 func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthLt, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthLt, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max > 0
@@ -122,7 +122,7 @@ func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 // Within 限制长度范围（不包含边界）
 func (c *checkMap[K, V]) Within(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageLengthWithin, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthWithin, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -136,7 +136,7 @@ func (c *checkMap[K, V]) Within(min, max int, opts ...RuleOption) *checkMap[K, V
 // Custom 自定义校验
 func (c *checkMap[K, V]) Custom(successIfNil bool, custom func(m map[K]V) bool, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[K, V](c.m, messageDefault, nil, func() bool {
+	c.v.checkRule(c.m == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(c.m)

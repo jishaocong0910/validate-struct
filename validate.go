@@ -28,12 +28,12 @@ type Validatable interface {
 	Checklist(v *Validator)
 }
 
-type validatablePtr[T any] interface {
+type validatable[T any] interface {
 	*T
 	Validatable
 }
 
-func Check[T any, V validatablePtr[T]](ctx context.Context, v V, opts ...ValidatorOption) (code string, message string, messages []string) {
+func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorOption) (code string, message string, messages []string) {
 	if v == nil {
 		return
 	}
@@ -151,7 +151,7 @@ func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *ch
 	return &checkString{v: v, s: s}
 }
 
-func (v *Validator) Struct[T any, V validatablePtr[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
+func (v *Validator) Struct[T any, V validatable[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
 	v.beforeCheckField(fieldName, opts)
 	return &checkStruct[T, V]{v: v, s: s}
 }
@@ -171,7 +171,7 @@ func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *che
 	return &checkAny[T]{v: v, a: a}
 }
 
-func (v *Validator) Embed[T any, V validatablePtr[T]](e V) {
+func (v *Validator) Embed[T any, V validatable[T]](e V) {
 	v.beforeCheckEmbed()
 	c := &checkEmbed[T, V]{v: v, e: e}
 	c.dive()
@@ -225,12 +225,12 @@ func (v *Validator) beforeCheckEmbed() {
 	}
 }
 
-func (v *Validator) checkRule[K comparable, V any, T *V | []V | map[K]V](t T, messageBuilder messageBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
+func (v *Validator) checkRule(isNil bool, messageBuilder messageBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
 	if v.stop() {
 		return
 	}
 	var fail bool
-	if t == nil {
+	if isNil {
 		if !v.fieldInfo.omitNil {
 			fail = !checkNil()
 		}
@@ -294,18 +294,22 @@ func (f *FieldInfo) Arg(i int) string {
 }
 
 func (f *FieldInfo) Args() string {
-	var builder strings.Builder
 	l := len(f.args)
-	if l > 0 {
-		builder.WriteString(f.args[0])
+	if l == 0 {
+		return ""
 	}
-	for i := 1; i < l-1; i++ {
-		builder.WriteString(", ")
+	if l == 1 {
+		return f.args[0]
+	}
+	if l == 2 {
+		return f.args[0] + " or " + f.args[1]
+	}
+	var builder strings.Builder
+	for i := 0; i < l-1; i++ {
 		builder.WriteString(f.args[i])
+		builder.WriteString(", ")
 	}
-	if l > 1 {
-		builder.WriteString(" or ")
-		builder.WriteString(f.args[l-1])
-	}
+	builder.WriteString("or ")
+	builder.WriteString(f.args[l-1])
 	return builder.String()
 }

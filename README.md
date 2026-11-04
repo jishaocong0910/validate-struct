@@ -1,6 +1,6 @@
-# Gverify
+# validate-struct
 
-一款用于Golang的结构体校验工具。它不通过标签来指定校验规则，而是由代码指定。使用标签的校验工具需要修改结构体，在一些代码生成器生成的结构体上使用时，可能导致代码覆盖或冲突问题。Gverify可实现**零代码入侵**，支持自定义错误码和错误消息，不使用反射，处理速度理论上比使用标签的校验工具快。
+用于Golang的结构体校验工具。它不通过标签来指定校验规则，而是由代码逻辑指定。使用标签的校验工具需要修改结构体，在一些代码生成器生成的结构体上使用时，可能导致代码覆盖或冲突问题。Gverify可实现**零代码入侵**，支持自定义错误码和错误消息，不使用反射，处理速度理论上比使用标签的校验工具快。
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jishaocong0910/gverify.svg)](https://pkg.go.dev/github.com/jishaocong0910/gverify)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jishaocong0910/gverify)](https://goreportcard.com/report/github.com/jishaocong0910/gverify)

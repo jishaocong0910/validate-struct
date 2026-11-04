@@ -14,7 +14,7 @@
 
 package validate
 
-type checkEmbed[T any, V validatablePtr[T]] struct {
+type checkEmbed[T any, V validatable[T]] struct {
 	v *Validator
 	e V
 }

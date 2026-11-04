@@ -27,7 +27,7 @@ func TestCheckRule(t *testing.T) {
 	{
 		// 成功
 		v := validate.NewValidator()
-		validate.CheckRule(v, new(5), nil, nil, func() bool {
+		validate.CheckRule(v, false, nil, nil, func() bool {
 			return false
 		}, func() bool {
 			return true
@@ -39,7 +39,7 @@ func TestCheckRule(t *testing.T) {
 		// 指定code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, new(5), []validate.RuleOption{validate.Code("MY_CODE"), validate.Msg(func(b *validate.FieldInfo) string {
+		validate.CheckRule(v, false, []validate.RuleOption{validate.Code("MY_CODE"), validate.Msg(func(b *validate.FieldInfo) string {
 			return fmt.Sprintf("%s %s", b.FieldName(), b.Args())
 		})}, func() []string {
 			return []string{"a", "b", "c"}
@@ -50,13 +50,13 @@ func TestCheckRule(t *testing.T) {
 		})
 		code, msg, _ := validate.GetResult(v)
 		r.Equal("MY_CODE", code)
-		r.Equal("param a, b or c", msg)
+		r.Equal("param a, b, or c", msg)
 	}
 	{
 		// 默认code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, new(5), nil, nil, func() bool {
+		validate.CheckRule(v, false, nil, nil, func() bool {
 			return true
 		}, func() bool {
 			return false
@@ -69,7 +69,7 @@ func TestCheckRule(t *testing.T) {
 		// nil导致错误
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, (*int)(nil), nil, nil, func() bool {
+		validate.CheckRule(v, true, nil, nil, func() bool {
 			return false
 		}, func() bool {
 			return true
@@ -81,7 +81,7 @@ func TestCheckRule(t *testing.T) {
 		// 忽略nil
 		v := validate.NewValidator()
 		validate.SetOmitNil(v)
-		validate.CheckRule(v, (*int)(nil), nil, nil, func() bool {
+		validate.CheckRule(v, true, nil, nil, func() bool {
 			return false
 		}, func() bool {
 			return false
@@ -93,7 +93,7 @@ func TestCheckRule(t *testing.T) {
 		// 中断
 		v := validate.NewValidator()
 		validate.SetHasError(v)
-		validate.CheckRule(v, (*int)(nil), []validate.RuleOption{validate.Code("MY_CODE")}, nil, func() bool {
+		validate.CheckRule(v, true, []validate.RuleOption{validate.Code("MY_CODE")}, nil, func() bool {
 			return false
 		}, func() bool {
 			return false

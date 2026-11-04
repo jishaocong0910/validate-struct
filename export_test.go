@@ -51,9 +51,9 @@ func SetOmitNil(v *Validator) {
 	OmitNil()(v.fieldInfo)
 }
 
-func CheckRule[T any](v *Validator, t *T, opts []RuleOption, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
+func CheckRule(v *Validator, isNil bool, opts []RuleOption, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
 	v.beforeCheckRule(opts)
-	v.checkRule[any, T](t, messageDefault, formatArgs, checkNil, checkNonNil)
+	v.checkRule(isNil, messageDefault, formatArgs, checkNil, checkNonNil)
 }
 
 type Number = number

@@ -23,7 +23,7 @@ type checkAny[T any] struct {
 // Required 必填
 func (c *checkAny[T]) Required(opts ...RuleOption) *checkAny[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[any, T](c.a, messageRequired, nil, func() bool {
+	c.v.checkRule(c.a == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -32,7 +32,7 @@ func (c *checkAny[T]) Required(opts ...RuleOption) *checkAny[T] {
 // Custom 自定义校验
 func (c *checkAny[T]) Custom(successIfNil bool, custom func(a T) bool, opts ...RuleOption) *checkAny[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule[any, T](c.a, messageDefault, nil, func() bool {
+	c.v.checkRule(c.a == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.a)
