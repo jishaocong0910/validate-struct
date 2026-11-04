@@ -80,7 +80,7 @@ func TestCheckRule(t *testing.T) {
 	{
 		// 忽略nil
 		v := validate.NewValidator()
-		validate.SetOmitempty(v)
+		validate.SetOmitNil(v)
 		validate.CheckRule(v, (*int)(nil), nil, nil, func() bool {
 			return false
 		}, func() bool {
@@ -135,8 +135,8 @@ func TestCheck(t *testing.T) {
 		r.Nil(msgs)
 	}
 	{
-		var u demoUser
-		code, msg, msgs := validate.Check(nil, &u)
+		var u *demoUser
+		code, msg, msgs := validate.Check(nil, u)
 		r.Equal("", code)
 		r.Equal("", msg)
 		r.Nil(msgs)

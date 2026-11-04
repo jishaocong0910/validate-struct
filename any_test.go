@@ -54,7 +54,7 @@ func TestCheckAny_Custom(t *testing.T) {
 		})
 	})
 	testSuccess(r, func(v *validate.Validator) {
-		v.Any((*any)(nil), "param", validate.Omitempty()).Custom(false, func(t any) bool {
+		v.Any((*any)(nil), "param", validate.OmitNil()).Custom(false, func(t any) bool {
 			return false
 		})
 	})

@@ -14,37 +14,30 @@
 
 package validate
 
-// ValidatorOption 校验器的选项
 type ValidatorOption func(v *Validator)
 
-// All 是否校验所有规则方法（将输出所有错误消息）v
 func All() ValidatorOption {
 	return func(v *Validator) {
 		v.all = true
 	}
 }
 
-// FieldOption 校验字段的选项
 type FieldOption func(*FieldInfo)
 
-// Omitempty 字段值为nil时不校验
-func Omitempty() FieldOption {
+func OmitNil() FieldOption {
 	return func(o *FieldInfo) {
-		o.omitempty = true
+		o.omitNil = true
 	}
 }
 
-// RuleOption 校验规则方法的选项
 type RuleOption func(*FieldInfo)
 
-// Code 自定义错误码，只有不使用 [All] 选项时有效果。
 func Code(code string) RuleOption {
 	return func(o *FieldInfo) {
 		o.code = code
 	}
 }
 
-// Msg 自定义错误消息
 func Msg(messageBuilder messageBuilder) RuleOption {
 	return func(o *FieldInfo) {
 		o.messageBuilder = messageBuilder

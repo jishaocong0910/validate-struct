@@ -47,8 +47,8 @@ func SetFieldName(v *Validator, fieldName string) {
 	v.fieldInfo.fieldName = fieldName
 }
 
-func SetOmitempty(v *Validator) {
-	Omitempty()(v.fieldInfo)
+func SetOmitNil(v *Validator) {
+	OmitNil()(v.fieldInfo)
 }
 
 func CheckRule[T any](v *Validator, t *T, opts []RuleOption, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {

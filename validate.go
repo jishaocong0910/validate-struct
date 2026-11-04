@@ -231,8 +231,8 @@ func (v *Validator) checkRule[K comparable, V any, T *V | []V | map[K]V](t T, me
 		return
 	}
 	var fail bool
-	if t != nil {
-		if !v.fieldInfo.omitempty {
+	if t == nil {
+		if !v.fieldInfo.omitNil {
 			fail = !checkNil()
 		}
 	} else if checkNonNil != nil {
@@ -271,7 +271,7 @@ type FieldInfo struct {
 	// 是否为切片元素、map的key或value
 	isElem bool
 	// nil时忽略校验
-	omitempty bool
+	omitNil bool
 	// 字段名
 	fieldName string
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段
