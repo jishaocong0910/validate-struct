@@ -3,7 +3,7 @@ package validate_test
 import (
 	"testing"
 
-	vfy "github.com/jishaocong0910/gverify"
+	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
@@ -11,16 +11,16 @@ type embedTest struct {
 	field *string
 }
 
-func (e embedTest) Checklist(vc *vfy.Context) {
-	vfy.String(vc, e.field, "field").Required()
+func (e embedTest) Checklist(v *validate.Validator) {
+	v.String(e.field, "field").Required()
 }
 
 func TestCheckEmbed_Required(t *testing.T) {
 	r := require.New(t)
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Embed(vc, (*embedTest)(nil))
+	testSuccess(r, func(v *validate.Validator) {
+		v.Embed((*embedTest)(nil))
 	})
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Embed(vc, &embedTest{})
+	testFail(r, func(v *validate.Validator) {
+		v.Embed(&embedTest{})
 	}, "field is required")
 }

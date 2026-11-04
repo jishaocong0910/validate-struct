@@ -45,7 +45,7 @@ func Code(code string) RuleOption {
 }
 
 // Msg 自定义错误消息
-func Msg(mbf msgBuildFunc) RuleOption {
+func Msg(mbf msgBuilder) RuleOption {
 	return func(o *FieldInfo) {
 		o.mbf = mbf
 	}

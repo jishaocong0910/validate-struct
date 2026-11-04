@@ -17,7 +17,7 @@ package validate_test
 import (
 	"testing"
 
-	vfy "github.com/jishaocong0910/gverify"
+	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,39 +25,39 @@ type structTest struct {
 	field *string
 }
 
-func (t structTest) Checklist(vc *vfy.Context) {
-	vfy.String(vc, t.field, "field").Required()
+func (t structTest) Checklist(v *validate.Validator) {
+	v.String(t.field, "field").Required()
 }
 
 func TestCheckStruct_Required(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, (*structTest)(nil), "param").Required()
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*structTest)(nil), "param").Required()
 	}, "param is required")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, &structTest{}, "param").Required()
+	testSuccess(r, func(v *validate.Validator) {
+		v.Struct(&structTest{}, "param").Required()
 	})
 }
 
 func TestCheckStruct_Custom(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, &structTest{}, "param").Custom(true, func(t structTest) bool {
+	testFail(r, func(v *validate.Validator) {
+		v.Struct(&structTest{}, "param").Custom(true, func(t structTest) bool {
 			return false
 		})
 	}, "param is illegal")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, &structTest{}, "param").Custom(false, func(t structTest) bool {
+	testSuccess(r, func(v *validate.Validator) {
+		v.Struct(&structTest{}, "param").Custom(false, func(t structTest) bool {
 			return true
 		})
 	})
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, (*structTest)(nil), "param").Custom(false, func(t structTest) bool {
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*structTest)(nil), "param").Custom(false, func(t structTest) bool {
 			return true
 		})
 	}, "param is illegal")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Struct(vc, (*structTest)(nil), "param").Custom(true, func(t structTest) bool {
+	testSuccess(r, func(v *validate.Validator) {
+		v.Struct((*structTest)(nil), "param").Custom(true, func(t structTest) bool {
 			return false
 		})
 	})

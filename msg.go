@@ -14,80 +14,80 @@
 
 package validate
 
-type msgBuildFunc func(f *FieldInfo)
+type msgBuilder func(f *FieldInfo)
 
-func msgBuildFuncDefault(f *FieldInfo) {
+func msgBuilderDefault(f *FieldInfo) {
 	f.Msg("%s is illegal", f.fieldName)
 }
 
-func msgBuildFuncRequired(f *FieldInfo) {
+func msgBuilderRequired(f *FieldInfo) {
 	f.Msg("%s is required", f.fieldName)
 }
 
-func msgBuildFuncMin(f *FieldInfo) {
+func msgBuilderMin(f *FieldInfo) {
 	f.Msg("%s must not be less than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncMax(f *FieldInfo) {
+func msgBuilderMax(f *FieldInfo) {
 	f.Msg("%s must not be greater than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncRange(f *FieldInfo) {
+func msgBuilderRange(f *FieldInfo) {
 	f.Msg("%s must be %s to %s", f.fieldName, f.Confine(0), f.Confine(1))
 }
 
-func msgBuildFuncGt(f *FieldInfo) {
+func msgBuilderGt(f *FieldInfo) {
 	f.Msg("%s must be greater than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLt(f *FieldInfo) {
+func msgBuilderLt(f *FieldInfo) {
 	f.Msg("%s must be less than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncWithin(f *FieldInfo) {
+func msgBuilderWithin(f *FieldInfo) {
 	f.Msg("%s must be greater than %s and less than %s", f.fieldName, f.Confine(0), f.Confine(1))
 }
 
-func msgBuildFuncEnum(f *FieldInfo) {
+func msgBuilderEnum(f *FieldInfo) {
 	f.Msg("%s must be %s", f.fieldName, f.Confines())
 }
 
-func msgBuildFuncNotBlank(f *FieldInfo) {
+func msgBuilderNotBlank(f *FieldInfo) {
 	f.Msg("%s must not be blank", f.fieldName)
 }
 
-func msgBuildFuncRegex(f *FieldInfo) {
+func msgBuilderRegex(f *FieldInfo) {
 	f.Msg("%s's format is illegal", f.fieldName)
 }
 
-func msgBuildFuncNotEmpty(f *FieldInfo) {
+func msgBuilderNotEmpty(f *FieldInfo) {
 	f.Msg("%s must not be empty", f.fieldName)
 }
 
-func msgBuildFuncLength(f *FieldInfo) {
+func msgBuilderLength(f *FieldInfo) {
 	f.Msg("%s's length must be %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLengthMin(f *FieldInfo) {
+func msgBuilderLengthMin(f *FieldInfo) {
 	f.Msg("%s's length must not be less than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLengthMax(f *FieldInfo) {
+func msgBuilderLengthMax(f *FieldInfo) {
 	f.Msg("%s's length must not be greater than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLengthRange(f *FieldInfo) {
+func msgBuilderLengthRange(f *FieldInfo) {
 	f.Msg("%s's length must be %s to %s", f.fieldName, f.Confine(0), f.Confine(1))
 }
 
-func msgBuildFuncLengthGt(f *FieldInfo) {
+func msgBuilderLengthGt(f *FieldInfo) {
 	f.Msg("%s's length must be greater than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLengthLt(f *FieldInfo) {
+func msgBuilderLengthLt(f *FieldInfo) {
 	f.Msg("%s's length must be less than %s", f.fieldName, f.Confine(0))
 }
 
-func msgBuildFuncLengthWithin(f *FieldInfo) {
+func msgBuilderLengthWithin(f *FieldInfo) {
 	f.Msg("%s's length must be greater than %s and less than %s", f.fieldName, f.Confine(0), f.Confine(1))
 }

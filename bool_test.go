@@ -17,39 +17,39 @@ package validate_test
 import (
 	"testing"
 
-	vfy "github.com/jishaocong0910/gverify"
+	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCheckBool_Required(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, (*bool)(nil), "param").Required()
+	testFail(r, func(v *validate.Validator) {
+		v.Bool((*bool)(nil), "param").Required()
 	}, "param is required")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, ptr(false), "param").Required()
+	testSuccess(r, func(v *validate.Validator) {
+		v.Bool(new(false), "param").Required()
 	})
 }
 
 func TestCheckBool_Custom(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, ptr(true), "param").Custom(true, func(t bool) bool {
+	testFail(r, func(v *validate.Validator) {
+		v.Bool(new(true), "param").Custom(true, func(t bool) bool {
 			return false
 		})
 	}, "param is illegal")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, ptr(true), "param").Custom(false, func(t bool) bool {
+	testSuccess(r, func(v *validate.Validator) {
+		v.Bool(new(true), "param").Custom(false, func(t bool) bool {
 			return true
 		})
 	})
-	testFail(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, nil, "param").Custom(false, func(t bool) bool {
+	testFail(r, func(v *validate.Validator) {
+		v.Bool(nil, "param").Custom(false, func(t bool) bool {
 			return true
 		})
 	}, "param is illegal")
-	testSuccess(r, func(vc *vfy.Context) {
-		vfy.Bool(vc, nil, "param").Custom(true, func(t bool) bool {
+	testSuccess(r, func(v *validate.Validator) {
+		v.Bool(nil, "param").Custom(true, func(t bool) bool {
 			return true
 		})
 	})

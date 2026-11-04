@@ -20,14 +20,14 @@ type checkBool struct {
 }
 
 func (c *checkBool) Required(opts ...RuleOption) *checkBool {
-	c.v.predicate[int, bool](c.b, opts, msgBuildFuncRequired, nil, func() bool {
+	c.v.checkRule[int, bool](c.b, opts, msgBuilderRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
 }
 
 func (c *checkBool) Custom(successIfNil bool, custom func(b bool) bool, opts ...RuleOption) *checkBool {
-	c.v.predicate[int, bool](c.b, opts, msgBuildFuncDefault, nil, func() bool {
+	c.v.checkRule[int, bool](c.b, opts, msgBuilderDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.b)

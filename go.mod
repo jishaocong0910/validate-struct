@@ -1,4 +1,4 @@
-module github.com/jishaocong0910/gverify
+module github.com/jishaocong0910/validate-struct
 
 go 1.27
 

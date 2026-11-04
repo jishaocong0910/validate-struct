@@ -14,43 +14,45 @@
 
 package validate
 
-func NewDefaultContext() *Context {
-	return &Context{all: false, fieldInfo: &FieldInfo{}}
+import "context"
+
+func NewValidator() *Validator {
+	return &Validator{ctx: context.Background(), fieldInfo: &FieldInfo{}}
 }
 
-func GetResult(vc *Context) (code string, msg string, msgs []string) {
-	if !vc.hasWrong {
+func GetResult(v *Validator) (code string, msg string, msgs []string) {
+	if !v.hasError {
 		code = SUCCESS
-	} else if vc.code == "" {
+	} else if v.code == "" {
 		code = FAIL
 	} else {
-		code = vc.code
+		code = v.code
 	}
-	msgs = vc.msgs
+	msgs = v.msgs
 	if len(msgs) > 0 {
 		msg = msgs[0]
 	}
 	return
 }
 
-func SetHasWrong(vc *Context) {
-	vc.hasWrong = true
+func SetHasWrong(v *Validator) {
+	v.hasError = true
 }
 
-func SetAll(vc *Context) {
-	vc.all = true
+func SetAll(v *Validator) {
+	v.all = true
 }
 
-func SetFieldName(vc *Context, fieldName string) {
-	vc.fieldInfo.fieldName = fieldName
+func SetFieldName(v *Validator, fieldName string) {
+	v.fieldInfo.fieldName = fieldName
 }
 
-func SetOmittable(vc *Context) {
-	Omitempty()(vc.fieldInfo)
+func SetOmittable(v *Validator) {
+	Omitempty()(v.fieldInfo)
 }
 
-func Predicate[T any](vc *Context, t *T, opts []RuleOption, confineFunc func() []string, predicateNil func() bool, predicateNoNil func() bool) {
-	predicate[int, T](vc, t, opts, msgBuildFuncDefault, confineFunc, predicateNil, predicateNoNil)
+func CheckRule[T any](v *Validator, t *T, opts []RuleOption, confineFunc func() []string, checkNil func() bool, checkNonNil func() bool) {
+	v.checkRule[int, T](t, opts, msgBuilderDefault, confineFunc, checkNil, checkNonNil)
 }
 
 type Number = number

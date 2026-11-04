@@ -16,8 +16,9 @@ package validate
 
 import (
 	"context"
+	"fmt"
 	"reflect"
-	"strconv"
+	"strings"
 )
 
 const (
@@ -43,7 +44,7 @@ func Check[V Validatable](ctx context.Context, v V, opts ...StructOption) (code 
 	}
 	v.Checklist(validator)
 
-	if !validator.hasWrong {
+	if !validator.hasError {
 		code = SUCCESS
 	} else {
 		code = validator.code
@@ -65,7 +66,7 @@ type Validator struct {
 	// 是否校验所有规则，使用选项 [All] 时为true
 	all bool
 	// 是否已有校验错误，在不校验全部规则时，通过此此值判断是否停止校验
-	hasWrong bool
+	hasError bool
 	// 错误消息，一般情况下只可能有一条，使用选项 [All] 时会有多条
 	msgs []string
 	// 当前校验字段的信息
@@ -74,106 +75,107 @@ type Validator struct {
 
 func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkBool {
 	v.beforeCheckField(fieldName, opts)
-	return &checkBool{v: v.beforeCheckField(fieldName, opts), b: b}
+	return &checkBool{v: v, b: b}
 }
 
 func (v *Validator) Byte(b *byte, fieldName string, opts ...FieldOption) *checkNumber[byte] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[byte]{v: v.beforeCheckField(fieldName, opts), n: b, nts: uint8ToStr}
+	return &checkNumber[byte]{v: v, n: b, numberFormatter: uint8ToStr}
 }
 
 func (v *Validator) Int(i *int, fieldName string, opts ...FieldOption) *checkNumber[int] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int]{v: v.beforeCheckField(fieldName, opts), n: i, nts: intToStr}
+	return &checkNumber[int]{v: v, n: i, numberFormatter: intToStr}
 }
 
 func (v *Validator) Int8(i *int8, fieldName string, opts ...FieldOption) *checkNumber[int8] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int8]{v: v.beforeCheckField(fieldName, opts), n: i, nts: int8ToStr}
+	return &checkNumber[int8]{v: v, n: i, numberFormatter: int8ToStr}
 }
 
 func (v *Validator) Int16(i *int16, fieldName string, opts ...FieldOption) *checkNumber[int16] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int16]{v: v.beforeCheckField(fieldName, opts), n: i, nts: int16ToStr}
+	return &checkNumber[int16]{v: v, n: i, numberFormatter: int16ToStr}
 }
 
 func (v *Validator) Int32(i *int32, fieldName string, opts ...FieldOption) *checkNumber[int32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int32]{v: v.beforeCheckField(fieldName, opts), n: i, nts: int32ToStr}
+	return &checkNumber[int32]{v: v, n: i, numberFormatter: int32ToStr}
 }
 
 func (v *Validator) Int64(i *int64, fieldName string, opts ...FieldOption) *checkNumber[int64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[int64]{v: v.beforeCheckField(fieldName, opts), n: i, nts: int64ToStr}
+	return &checkNumber[int64]{v: v, n: i, numberFormatter: int64ToStr}
 }
 
 func (v *Validator) Uint(u *uint, fieldName string, opts ...FieldOption) *checkNumber[uint] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint]{v: v.beforeCheckField(fieldName, opts), n: u, nts: uintToStr}
+	return &checkNumber[uint]{v: v, n: u, numberFormatter: uintToStr}
 }
 
 func (v *Validator) Uint8(u *uint8, fieldName string, opts ...FieldOption) *checkNumber[uint8] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint8]{v: v.beforeCheckField(fieldName, opts), n: u, nts: uint8ToStr}
+	return &checkNumber[uint8]{v: v, n: u, numberFormatter: uint8ToStr}
 }
 
 func (v *Validator) Uint16(u *uint16, fieldName string, opts ...FieldOption) *checkNumber[uint16] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint16]{v: v.beforeCheckField(fieldName, opts), n: u, nts: uint16ToStr}
+	return &checkNumber[uint16]{v: v, n: u, numberFormatter: uint16ToStr}
 }
 
 func (v *Validator) Uint32(u *uint32, fieldName string, opts ...FieldOption) *checkNumber[uint32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint32]{v: v.beforeCheckField(fieldName, opts), n: u, nts: uint32ToStr}
+	return &checkNumber[uint32]{v: v, n: u, numberFormatter: uint32ToStr}
 }
 
 func (v *Validator) Uint64(u *uint64, fieldName string, opts ...FieldOption) *checkNumber[uint64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[uint64]{v: v.beforeCheckField(fieldName, opts), n: u, nts: uint64ToStr}
+	return &checkNumber[uint64]{v: v, n: u, numberFormatter: uint64ToStr}
 }
 
 func (v *Validator) Float32(f *float32, fieldName string, opts ...FieldOption) *checkNumber[float32] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[float32]{v: v.beforeCheckField(fieldName, opts), n: f, nts: float32ToStr}
+	return &checkNumber[float32]{v: v, n: f, numberFormatter: float32ToStr}
 }
 
 func (v *Validator) Float64(f *float64, fieldName string, opts ...FieldOption) *checkNumber[float64] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkNumber[float64]{v: v.beforeCheckField(fieldName, opts), n: f, nts: float64ToStr}
+	return &checkNumber[float64]{v: v, n: f, numberFormatter: float64ToStr}
 }
 
 func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *checkString {
 	v.beforeCheckField(fieldName, opts)
-	return &checkString{v: v.beforeCheckField(fieldName, opts), s: s}
+	return &checkString{v: v, s: s}
 }
 
 func (v *Validator) Struct[V Validatable](s *V, fieldName string, opts ...FieldOption) *checkStruct[V] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkStruct[V]{v: v.beforeCheckField(fieldName, opts), s: s}
+	return &checkStruct[V]{v: v, s: s}
 }
 
 func (v *Validator) Slice[T any](s []T, fieldName string, opts ...FieldOption) *checkSlice[T] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkSlice[T]{v: v.beforeCheckField(fieldName, opts), s: s}
+	return &checkSlice[T]{v: v, s: s}
 }
 
 func (v *Validator) Map[K comparable, V any](m map[K]V, fieldName string, opts ...FieldOption) *checkMap[K, V] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkMap[K, V]{v: v.beforeCheckField(fieldName, opts), m: m}
+	return &checkMap[K, V]{v: v, m: m}
 }
 
 func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *checkAny[T] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkAny[T]{v: v.beforeCheckField(fieldName, opts), a: a}
+	return &checkAny[T]{v: v, a: a}
 }
 
 func (v *Validator) Embed[V Validatable](s *V) {
-	c := &checkEmbed[V]{v: v.beforeCheckEmbed(), s: s}
+	v.beforeCheckEmbed()
+	c := &checkEmbed[V]{v: v, s: s}
 	c.dive()
 }
 
-func (v *Validator) interrupt() bool {
-	return v.hasWrong && !v.all
+func (v *Validator) shouldStop() bool {
+	return v.hasError && !v.all
 }
 
 func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
@@ -206,15 +208,14 @@ func (v *Validator) beforeDiveSliceMap(elemName string) {
 	}
 }
 
-func (v *Validator) beforeCheckEmbed() *Validator {
+func (v *Validator) beforeCheckEmbed() {
 	v.fieldInfo = &FieldInfo{
 		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 	}
-	return v
 }
 
-func (v *Validator) predicate[C comparable, A any, T *A | []A | map[C]A](t T, opts []RuleOption, mbf msgBuildFunc, confineFunc func() []string, predicateNil func() bool, predicateNoNil func() bool) {
-	if v.interrupt() {
+func (v *Validator) checkRule[C comparable, A any, T *A | []A | map[C]A](t T, opts []RuleOption, mbf msgBuilder, confineFunc func() []string, checkNil func() bool, checkNonNil func() bool) {
+	if v.shouldStop() {
 		return
 	}
 	for _, opt := range opts {
@@ -223,10 +224,10 @@ func (v *Validator) predicate[C comparable, A any, T *A | []A | map[C]A](t T, op
 	var fail bool
 	if t == nil {
 		if !v.fieldInfo.omitempty {
-			fail = !predicateNil()
+			fail = !checkNil()
 		}
-	} else if predicateNoNil != nil {
-		fail = !predicateNoNil()
+	} else if checkNonNil != nil {
+		fail = !checkNonNil()
 	}
 	if fail {
 		var confines []string
@@ -237,8 +238,8 @@ func (v *Validator) predicate[C comparable, A any, T *A | []A | map[C]A](t T, op
 	}
 }
 
-func (v *Validator) fail(mbf msgBuildFunc, confines []string) {
-	v.hasWrong = true
+func (v *Validator) fail(mbf msgBuilder, confines []string) {
+	v.hasError = true
 	if !v.all {
 		v.code = v.fieldInfo.code
 	}
@@ -255,98 +256,59 @@ func (v *Validator) fail(mbf msgBuildFunc, confines []string) {
 	v.msgs = append(v.msgs, msg)
 }
 
-func intToStr(ii ...int) []string {
-	result := make([]string, 0, len(ii))
-	for _, i := range ii {
-		result = append(result, strconv.FormatInt(int64(i), 10))
-	}
-	return result
+// FieldInfo 字段信息
+type FieldInfo struct {
+	// 字段名前缀
+	fieldNamePrefix string
+	// 是否为切片元素、map的key或value
+	hasElemName bool
+	// nil时忽略校验
+	omitempty bool
+	// 字段名
+	fieldName string
+	// 限制值的字符串形式，校验每个规则方法时会修改此字段
+	confines []string
+	// 错误消息函数，校验每个规则方法时会修改此字段
+	mbf msgBuilder
+	// 校验时的错误码，校验每个规则方法时会修改此字段
+	code string
+	// 校验失败的错误消息，校验每个规则方法时会修改此字段
+	msg string
 }
 
-func int8ToStr(ii ...int8) []string {
-	result := make([]string, 0, len(ii))
-	for _, i := range ii {
-		result = append(result, strconv.FormatInt(int64(i), 10))
-	}
-	return result
+// FieldName 返回具有层级关系的字段名称。例如：title、author.name、categoryId[2].sort。
+func (f *FieldInfo) FieldName() string {
+	return f.fieldName
 }
 
-func int16ToStr(ii ...int16) []string {
-	result := make([]string, 0, len(ii))
-	for _, i := range ii {
-		result = append(result, strconv.FormatInt(int64(i), 10))
+// Confine 返回规则方法的指定索引的限制值的字符串形式。例如：对于Max(10)，vc.Confine(0)返回10；对于Range(5, 15)，vc.Confine(0)返回5，vc.Confine(1)返回15。
+func (f *FieldInfo) Confine(i int) string {
+	confine := ""
+	if i < len(f.confines) {
+		confine = f.confines[i]
 	}
-	return result
+	return confine
 }
 
-func int32ToStr(ii ...int32) []string {
-	result := make([]string, 0, len(ii))
-	for _, i := range ii {
-		result = append(result, strconv.FormatInt(int64(i), 10))
+// Confines 返回规则方法的所有限制值的字符串形式，用","拼接，若数量超过两个，则最后一个用"or"拼接。例如：对于Enum("zh-cn", "en-US")，返回"zh-cn, en-US"；对于Enum("zh-cn", "en-US", "ja-JP")，返回"zh-cn, en-US or ja-JP"。
+func (f *FieldInfo) Confines() string {
+	var builder strings.Builder
+	l := len(f.confines)
+	if l > 0 {
+		builder.WriteString(f.confines[0])
 	}
-	return result
+	for i := 1; i < l-1; i++ {
+		builder.WriteString(", ")
+		builder.WriteString(f.confines[i])
+	}
+	if l > 1 {
+		builder.WriteString(" or ")
+		builder.WriteString(f.confines[l-1])
+	}
+	return builder.String()
 }
 
-func int64ToStr(ii ...int64) []string {
-	result := make([]string, 0, len(ii))
-	for _, i := range ii {
-		result = append(result, strconv.FormatInt(i, 10))
-	}
-	return result
-}
-
-func uintToStr(uu ...uint) []string {
-	result := make([]string, 0, len(uu))
-	for _, u := range uu {
-		result = append(result, strconv.FormatUint(uint64(u), 10))
-	}
-	return result
-}
-
-func uint8ToStr(uu ...uint8) []string {
-	result := make([]string, 0, len(uu))
-	for _, u := range uu {
-		result = append(result, strconv.FormatUint(uint64(u), 10))
-	}
-	return result
-}
-
-func uint16ToStr(uu ...uint16) []string {
-	result := make([]string, 0, len(uu))
-	for _, u := range uu {
-		result = append(result, strconv.FormatUint(uint64(u), 10))
-	}
-	return result
-}
-
-func uint32ToStr(uu ...uint32) []string {
-	result := make([]string, 0, len(uu))
-	for _, u := range uu {
-		result = append(result, strconv.FormatUint(uint64(u), 10))
-	}
-	return result
-}
-
-func uint64ToStr(uu ...uint64) []string {
-	result := make([]string, 0, len(uu))
-	for _, u := range uu {
-		result = append(result, strconv.FormatUint(u, 10))
-	}
-	return result
-}
-
-func float32ToStr(ff ...float32) []string {
-	result := make([]string, 0, len(ff))
-	for _, f := range ff {
-		result = append(result, strconv.FormatFloat(float64(f), 'f', -1, 32))
-	}
-	return result
-}
-
-func float64ToStr(ff ...float64) []string {
-	result := make([]string, 0, len(ff))
-	for _, f := range ff {
-		result = append(result, strconv.FormatFloat(f, 'f', -1, 32))
-	}
-	return result
+// Msg 自定义错误消息
+func (f *FieldInfo) Msg(msg string, args ...any) {
+	f.msg = fmt.Sprintf(msg, args...)
 }

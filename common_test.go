@@ -15,21 +15,21 @@
 package validate_test
 
 import (
-	vfy "github.com/jishaocong0910/gverify"
+	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
-func testSuccess(r *require.Assertions, f func(vc *vfy.Context)) {
-	vc := vfy.NewDefaultContext()
-	f(vc)
-	code, _, _ := vfy.GetResult(vc)
-	r.Equal(vfy.SUCCESS, code)
+func testSuccess(r *require.Assertions, handler func(vc *validate.Validator)) {
+	v := validate.NewValidator()
+	handler(v)
+	code, _, _ := validate.GetResult(v)
+	r.Equal(validate.SUCCESS, code)
 }
 
-func testFail(r *require.Assertions, f func(vc *vfy.Context), expectedMsg string) {
-	vc := vfy.NewDefaultContext()
-	f(vc)
-	code, msg, _ := vfy.GetResult(vc)
-	r.Equal(vfy.FAIL, code)
+func testFail(r *require.Assertions, handler func(vc *validate.Validator), expectedMsg string) {
+	v := validate.NewValidator()
+	handler(v)
+	code, msg, _ := validate.GetResult(v)
+	r.Equal(validate.FAIL, code)
 	r.Equal(expectedMsg, msg)
 }
