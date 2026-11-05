@@ -19,14 +19,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testSuccess(r *require.Assertions, handler func(vc *validate.Validator)) {
+func checklistSuccess(r *require.Assertions, handler func(vc *validate.Validator)) {
 	v := validate.NewValidator()
 	handler(v)
 	code, _, _ := validate.GetResult(v)
 	r.Equal(validate.SUCCESS, code)
 }
 
-func testFail(r *require.Assertions, handler func(vc *validate.Validator), expectedMsg string) {
+func checklistFail(r *require.Assertions, handler func(vc *validate.Validator), expectedMsg string) {
 	v := validate.NewValidator()
 	handler(v)
 	code, message, _ := validate.GetResult(v)

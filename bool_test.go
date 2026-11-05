@@ -23,32 +23,32 @@ import (
 
 func TestCheckBool_Required(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Bool((*bool)(nil), "param").Required()
 	}, "param is required")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Bool(new(false), "param").Required()
 	})
 }
 
 func TestCheckBool_Custom(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Bool(new(true), "param").Custom(true, func(t bool) bool {
 			return false
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Bool(new(true), "param").Custom(false, func(t bool) bool {
 			return true
 		})
 	})
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Bool(nil, "param").Custom(false, func(t bool) bool {
 			return true
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Bool(nil, "param").Custom(true, func(t bool) bool {
 			return true
 		})

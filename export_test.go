@@ -195,3 +195,13 @@ type DemoProduct struct {
 func (d DemoProduct) Checklist(v *Validator) {
 	v.Struct(&d.Category, "category").Dive()
 }
+
+type DemoNode struct {
+	Name string
+	Next *DemoNode
+}
+
+func (d *DemoNode) Checklist(v *Validator) {
+	v.String(&d.Name, "name").NotBlank()
+	v.Struct(d.Next, "next").Dive()
+}

@@ -23,32 +23,32 @@ import (
 
 func TestCheckStruct_Required(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoUser)(nil), "param").Required()
 	}, "param is required")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoUser{}, "param").Required()
 	})
 }
 
 func TestCheckStruct_Custom(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoUser{}, "param").Custom(true, func(t validate.DemoUser) bool {
 			return false
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoUser{}, "param").Custom(false, func(t validate.DemoUser) bool {
 			return true
 		})
 	})
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoUser)(nil), "param").Custom(false, func(t validate.DemoUser) bool {
 			return true
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoUser)(nil), "param").Custom(true, func(t validate.DemoUser) bool {
 			return false
 		})
@@ -57,23 +57,43 @@ func TestCheckStruct_Custom(t *testing.T) {
 
 func TestCheckStruct_Dive(t *testing.T) {
 	r := require.New(t)
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoBase{Id: "id"}, "param").Dive()
 	})
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoBase{}, "param").Dive()
 	}, "param.id must not be blank")
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoBase)(nil), "param").Dive()
 	}, "param.id is required")
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoCommunication)(nil), "param").Dive()
 	}, "param.address.city is required")
 }
 
 func TestCheckStruct_ShouldStop(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoUser{Id: "id"}, "param").Dive()
 	}, "param.name must not be blank")
+}
+
+func TestCheckStruct_DiveCycle(t *testing.T) {
+	node := &validate.DemoNode{}
+	node.Next = node
+
+	code, _, messages := validate.Check(nil, node, validate.All())
+	require.Equal(t, validate.FAIL, code)
+	require.Equal(t, []string{"name must not be blank"}, messages)
+}
+
+func TestCheckStruct_VirtualDiveCycle(t *testing.T) {
+	node := &validate.DemoNode{}
+
+	code, _, messages := validate.Check(nil, node, validate.All())
+	require.Equal(t, validate.FAIL, code)
+	require.Equal(t, []string{
+		"name must not be blank",
+		"next.name must not be blank",
+	}, messages)
 }

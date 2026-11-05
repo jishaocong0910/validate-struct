@@ -23,37 +23,37 @@ import (
 
 func TestCheckAny_Required(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Any((*int)(nil), "param").Required()
 	}, "param is required")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Any(new(5), "param").Required()
 	})
 }
 
 func TestCheckAny_Custom(t *testing.T) {
 	r := require.New(t)
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Any(new(5), "param").Custom(true, func(t int) bool {
 			return false
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Any(new(5), "param").Custom(false, func(t int) bool {
 			return true
 		})
 	})
-	testFail(r, func(v *validate.Validator) {
+	checklistFail(r, func(v *validate.Validator) {
 		v.Any((*any)(nil), "param").Custom(false, func(t any) bool {
 			return true
 		})
 	}, "param is invalid")
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Any((*any)(nil), "param").Custom(true, func(t any) bool {
 			return false
 		})
 	})
-	testSuccess(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Any((*any)(nil), "param", validate.OmitNil()).Custom(false, func(t any) bool {
 			return false
 		})
