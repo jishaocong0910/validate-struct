@@ -18,157 +18,108 @@ go get github.com/jishaocong0910/validate-struct
 package main
 
 import (
-    "context"
-    "fmt"
-    "regexp"
+	"context"
+	"fmt"
+	"regexp"
 
-    validate "github.com/jishaocong0910/validate-struct"
+	validate "github.com/jishaocong0910/validate-struct"
 )
 
 type Book struct {
-    Title       string
-    Isbn        string
-    Description *string
-    Stock       int
-    Price       float64
-    Language    *string
-    Author      *Author
-    Categories  []*Category
+	Title       string
+	Isbn        string
+	Description *string
+	Stock       int
+	Price       float64
+	Language    *string
+	Author      *Author
+	Categories  []*Category
 }
 
-func (b *Book) Checklist(vc *validate.VContext) {
-    v.String( &b.Title, "title").NotBlank().Max(10)
-    v.String( &b.Isbn, "isbn").NotBlank().Regex(regexp.MustCompile(`^[0-9]{13}$`))
-    v.String( b.Description, "description").Required()
-    v.Int( &b.Stock, "stock").Range(0, 100)
-    v.Float64( &b.Price, "price").Gt(0)
-    v.String( b.Language, "language").Enum([]string{"zh-cn", "en-US", "ja-JP"})
-    v.Struct( b.Author, "author").Required().Dive()
-    v.Slice( b.Categories, "categories").NotEmpty().Dive(func(e *Category) {
-        v.Struct( e, "").Dive()
-    })
+func (b *Book) Checklist(v *validate.Validator) {
+	v.String(&b.Title, "title").NotBlank().Max(10)
+	v.String(&b.Isbn, "isbn").NotBlank().Regex(regexp.MustCompile(`^[0-9]{13}$`))
+	v.String(b.Description, "description").Required()
+	v.Int(&b.Stock, "stock").BetweenInclusive(0, 100)
+	v.Float64(&b.Price, "price").Gt(0)
+	v.String(b.Language, "language").Enum([]string{"zh-cn", "en-US", "ja-JP"})
+	v.Struct(b.Author, "author").Required().Dive()
+	v.Slice(b.Categories, "categories").NotEmpty().Dive(func(e *Category) {
+		v.Struct(e, "").Dive()
+	})
 }
 
 type Author struct {
-    Name    string
-    Resumes *string
+	Name    string
+	Resumes *string
 }
 
-func (a Author) Checklist(vc *validate.VContext) {
-    v.String( &a.Name, "name").NotBlank()
-    v.String( &a.Name, "resumes").NotBlank()
+func (a Author) Checklist(v *validate.Validator) {
+	v.String(&a.Name, "name").NotBlank()
+	v.String(&a.Name, "resumes").NotBlank()
 }
 
 type Category struct {
-    Id   string
-    Sort int
+	Id   string
+	Sort int
 }
 
-func (c Category) Checklist(vc *validate.VContext) {
-    v.String( &c.Id, "id").NotBlank()
-    v.Int( &c.Sort, "sort").Max(999)
+func (c Category) Checklist(v *validate.Validator) {
+	v.String(&c.Id, "id").NotBlank()
+	v.Int(&c.Sort, "sort").Max(999)
 }
 
 func main() {
-    b := Book{Author: &Author{}, Categories: []*Category{{Sort: 127}, {Id: "c1", Sort: 1000}}}
-    code, _, msgs := validate.Check(context.Background(), &b, validate.All())
-    if code != validate.SUCCESS {
-        for i, msg := range msgs {
-            fmt.Println(i, msg)
-        }
-    }
-    // Output:
-    // 0 title must not be blank
-    // 1 isbn must not be blank
-    // 2 isbn's format is illegal
-    // 3 description is required
-    // 4 price must be greater than 0
-    // 5 language must be zh-cn, en-US or ja-JP
-    // 6 author.name must not be blank
-    // 7 author.resumes must not be blank
-    // 8 categories[0].id must not be blank
-    // 9 categories[1].sort must not be greater than 999
+	b := Book{Author: &Author{}, Categories: []*Category{{Sort: 127}, {Id: "c1", Sort: 1000}}}
+	code, _, msgs := validate.Check(context.Background(), &b, validate.AllRule())
+	if code != validate.SUCCESS {
+		for i, msg := range msgs {
+			fmt.Println(i, msg)
+		}
+	}
+	// Output:
+	// 0 title must not be blank
+	// 1 isbn must not be blank
+	// 2 isbn has an invalid format
+	// 3 description is required
+	// 4 price must be greater than 0
+	// 5 language must be "zh-cn", "en-US", or "ja-JP"
+	// 6 author.name must not be blank
+	// 7 author.resumes must not be blank
+	// 8 categories[0].id must not be blank
+	// 9 categories[1].sort must be at most 999
 }
 ```
 
-# 校验入口
+# 校验入口函数
 
-***校验函数***：`validate.Check`，<u>只能校验非nil结构体</u>。
+`validate.Check`方法
 
-<table>
-    <th>入参</th>
-    <th>描述</th>
-    <tr>
-        <td width=170px>ctx context.Context</td>
-        <td>Context</td>
-    </tr>
-    <tr>
-        <td>s validate.Verifiable</td>
-        <td>待校验的结构体</td>
-    </tr>
-    <tr>
-        <td>opts ...validate.Option</td>
-        <td>选项</td>
-    </tr>
-    
-</table>
+| 参数                          | 描述                                                      |
+|-------------------------------|-----------------------------------------------------------|
+| `ctx context.Context`         | 上下文，若为`nil`则使用`context.Background()`作为默认值。 |
+| `target validate.Validatable` | 待校验的结构体。                                          |
+| `opts ...validate.Option`     | 选项                                                      |
 
-<table>
-    <th>返回</th>
-    <th>描述</th>
-    <tr>
-        <td width=160px>code string</td>
-        <td>错误码，"SUCCESS"为校验成功，"FAIL"为校验失败，可使用常量<i>validate.SUCCESS</i>和<i>validate.FAIL</i>进行比较。</td>
-    </tr>
-    <tr>
-        <td>msg string</td>
-        <td>首个错误消息</td>
-    </tr>
-    <tr>
-        <td>msgs []string</td>
-        <td>所有错误消息</td>
-    </tr>
-</table>
+| 返回                | 描述                                                                                                   |
+|---------------------|--------------------------------------------------------------------------------------------------------|
+| `code string`       | 错误码，`SUCCESS`为校验成功，`FAIL`为校验失败，可使用常量`validate.SUCCESS`和`validate.FAIL`进行比较。 |
+| `message string`    | 首个错误消息                                                                                           |
+| `messages []string` | 所有错误消息                                                                                           |
 
-| 选项      | 描述                              |
-|---------|---------------------------------|
-| validate.All | 校验所有校验规则，不使用此选项时，首个校验错误出现既停止校验。 |
+| 选项               | 描述                                                           |
+|--------------------|----------------------------------------------------------------|
+| `validate.AllRule` | 校验所有校验规则，不使用此选项时，首个校验错误出现既停止校验。 |
 
-# Checklist方法
+# Checklist
 
-结构体通过实现*validate.Verifiable*接口的*Checklist*方法，在其中编写字段的校验规则。校验字段时，根据字段类型，调用对应的***字段类型函数***，传入<i>Checklist</i>方法的<i>vc</i>参数、字段值的指针和字段名称，再链式调用***规则方法***，可指定一些选项。
+待校验的结构体必须实现`validate.Validatable`接口。接口的唯一方法`Checklist(*validate.Validator)`用于编写结构体每个字段的校验规则，其中`validate.Validator`提供了各种类型的校验以及一些选项。字段根据类型调用`validate.Validator`的对应的**类型入口方法**，再链式调用**规则方法**指定单个或多个规则。
 
-*e.g.*
+*Example*
 
-```go
-func (b *Book) Checklist(vc *validate.VContext) {
-    v.String( &b.Title, "title", validate.Omitempty()).NotBlank().Max(10, validate.Code("TITLE_TOO_LONG"))
-}
 ```
 
-| 字段类型函数      | 对应类型           |
-|-------------|----------------|
-| validate.Bool    | bool           |
-| validate.Byte    | byte           |
-| validate.Int     | int            |
-| validate.Int8    | int8           |
-| validate.Int16   | int16          |
-| validate.Int32   | int32          |
-| validate.Int64   | int64          |
-| validate.Uint    | uint           |
-| validate.Uint8   | uint8          |
-| validate.Uint16  | uint16         |
-| validate.Uint32  | uint32         |
-| validate.Uint64  | uint64         |
-| validate.Float32 | float32        |
-| validate.Float64 | float64        |
-| validate.String  | string         |
-| validate.Slice   | slice          |
-| validate.Map     | map            |
-| validate.Struct  | struct         |
-| validate.Embed   | 内嵌struct，且非nil |
-| validate.Any     | any            |
-
+```
 <table>
     <tr>
         <th>规则方法</th>
@@ -334,11 +285,11 @@ func main() {
 
 * 在结构体所在文件
 
-对于非代码生成器生成的结构体，可直接在结构体所在文件实现<i>validate.Verifiable</i>接口，上文中的代码示例都是这种风格。
+对于非代码生成器生成的结构体，可直接在结构体所在文件实现<i>validate.Validatable</i>接口，上文中的代码示例都是这种风格。
 
 * 在同目录其他文件
 
-为了避免代码生成器覆盖文件，可以在同包下另一个文件实现<i>validate.Verifiable</i>接口。
+为了避免代码生成器覆盖文件，可以在同包下另一个文件实现<i>validate.Validatable</i>接口。
 
 *目录结构*
 
@@ -374,7 +325,7 @@ func (g GenStruct) Checklist(vc *validate.VContext) {
 
 * 在其他目录的文件
 
-也可以在其他包实现`validate.Verifiable`接口。由于Golang语法禁止类型的方法放在非定义它的包下，因此需增加一个内嵌原结构体的新的结构体，通过新的结构体来校验。
+也可以在其他包实现`validate.Validatable`接口。由于Golang语法禁止类型的方法放在非定义它的包下，因此需增加一个内嵌原结构体的新的结构体，通过新的结构体来校验。
 
 *目录结构*
 

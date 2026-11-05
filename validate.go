@@ -33,12 +33,12 @@ type validatable[T any] interface {
 	Validatable
 }
 
-func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorOption) (code string, message string, messages []string) {
+func Check[T any, V validatable[T]](ctx context.Context, target V, opts ...ValidatorOption) (code string, message string, messages []string) {
 	validator := newValidator(ctx)
 	for _, o := range opts {
 		o(validator)
 	}
-	validator.checkRoot(v)
+	validator.checkRoot(target)
 
 	if !validator.hasError {
 		code = SUCCESS
@@ -70,6 +70,10 @@ type Validator struct {
 	fieldInfo *FieldInfo
 	// 用于递归保护
 	diveTypes map[any]struct{}
+}
+
+func (v *Validator) Ctx() context.Context {
+	return v.ctx
 }
 
 func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkBool {
@@ -149,7 +153,7 @@ func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *ch
 
 func (v *Validator) Struct[T any, V validatable[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkStruct[T, V]{v: v, value: s}
+	return &checkStruct[T, V]{v: v, s: s}
 }
 
 func (v *Validator) Slice[T any](s []T, fieldName string, opts ...FieldOption) *checkSlice[T] {
@@ -168,7 +172,7 @@ func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *che
 }
 
 func (v *Validator) Embed[T any, V validatable[T]](e V) {
-	c := &checkEmbed[T, V]{v: v, value: e}
+	c := &checkEmbed[T, V]{v: v, e: e}
 	c.dive()
 }
 
