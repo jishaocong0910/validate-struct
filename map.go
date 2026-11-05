@@ -149,7 +149,7 @@ func (c *checkMap[K, V]) Dive(checkKey func(key K), checkValue func(value V)) {
 	if c.v.shouldStop() {
 		return
 	}
-	if c.m != nil {
+	if c.m != nil && !c.v.fieldInfo.virtualDive {
 		for k, v := range c.m {
 			if checkKey != nil {
 				if c.v.shouldStop() {

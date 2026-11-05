@@ -23,7 +23,7 @@ func (c *checkEmbed[T, V]) dive() {
 	if c.v.shouldStop() {
 		return
 	}
-	diveSrc, after := c.v.beforeDiveStruct(c.src, true)
+	diveSrc, after := c.v.beforeDiveStruct(c.src, false)
 	if diveSrc != nil {
 		diveSrc.Checklist(c.v)
 		if after != nil {

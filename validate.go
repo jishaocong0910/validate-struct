@@ -38,7 +38,7 @@ func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorO
 	for _, o := range opts {
 		o(validator)
 	}
-	validator.Embed(v)
+	validator.checkRoot(v)
 
 	if !validator.hasError {
 		code = SUCCESS
@@ -172,6 +172,11 @@ func (v *Validator) Embed[T any, V validatable[T]](e V) {
 	c.dive()
 }
 
+func (v *Validator) checkRoot[T any, V validatable[T]](r V) {
+	diveSrc, _ := v.beforeDiveStruct(r, false)
+	diveSrc.Checklist(v)
+}
+
 func (v *Validator) shouldStop() bool {
 	return v.hasError && !v.all
 }
@@ -203,7 +208,7 @@ func (v *Validator) beforeCheckRule(opts []RuleOption) {
 	}
 }
 
-func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V, isEmbed bool) (diveSrc V, after func()) {
+func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V, isField bool) (diveSrc V, after func()) {
 	var key any
 	if src == nil {
 		key = (*T)(nil)
@@ -213,10 +218,10 @@ func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V, isEmbed boo
 	if _, ok := v.diveTypes[key]; !ok {
 		prev := v.fieldInfo
 		var fieldNamePrefix string
-		if isEmbed {
-			fieldNamePrefix = v.fieldInfo.fieldNamePrefix
-		} else {
+		if isField {
 			fieldNamePrefix = v.fieldInfo.fieldName + "."
+		} else {
+			fieldNamePrefix = v.fieldInfo.fieldNamePrefix
 		}
 		v.fieldInfo = &FieldInfo{
 			fieldNamePrefix: fieldNamePrefix,
