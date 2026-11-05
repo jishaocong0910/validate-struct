@@ -318,7 +318,7 @@ func newValidator(ctx context.Context) *Validator {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return &Validator{ctx: context.Background(), fieldInfo: &FieldInfo{}, virtualDiveTypes: make(map[any]struct{})}
+	return &Validator{ctx: ctx, fieldInfo: &FieldInfo{}, virtualDiveTypes: make(map[any]struct{})}
 }
 
 // FieldInfo 字段信息
