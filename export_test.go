@@ -105,3 +105,63 @@ func FormatFloat32(args ...float32) []string {
 func FormatFloat64(args ...float64) []string {
 	return formatFloat64(args...)
 }
+
+type DemoBase struct {
+	Id string
+}
+
+func (d DemoBase) Checklist(v *Validator) {
+	v.String(&d.Id, "id").NotBlank()
+}
+
+type DemoUser struct {
+	DemoBase
+	Name   string
+	Attach *DemoAttach
+}
+
+func (d DemoUser) Checklist(v *Validator) {
+	v.Embed(&d.DemoBase)
+	v.String(&d.Name, "name").NotBlank()
+	v.Struct(d.Attach, "attach").Dive()
+}
+
+type DemoAttach struct {
+	DemoBase
+	Images   []DemoImage
+	Score    map[string]int
+	Profiles map[string]DemoProfile
+}
+
+func (d DemoAttach) Checklist(v *Validator) {
+	v.Embed(&d.DemoBase)
+	v.Slice(d.Images, "images").Dive(func(i DemoImage) {
+		v.Struct(&i, "not work").Dive()
+	})
+	v.Map(d.Score, "score").Dive(nil, func(value int) {
+		v.Int(&value, "not work").Max(100)
+	})
+	v.Map(d.Profiles, "profiles").Dive(func(k string) {
+		v.String(&k, "not work").Max(4)
+	}, func(value DemoProfile) {
+		v.Struct(&value, "not work").Dive()
+	})
+}
+
+type DemoImage struct {
+	Url string
+	DemoBase
+}
+
+func (d DemoImage) Checklist(v *Validator) {
+	v.String(&d.Url, "url").NotBlank()
+	v.Embed(&d.DemoBase)
+}
+
+type DemoProfile struct {
+	Name string
+}
+
+func (s DemoProfile) Checklist(v *Validator) {
+	v.String(&s.Name, "name").NotBlank()
+}

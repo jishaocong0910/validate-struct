@@ -21,44 +21,43 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type structTest struct {
-	field *string
-}
-
-func (t structTest) Checklist(v *validate.Validator) {
-	v.String(t.field, "field").Required()
-}
-
 func TestCheckStruct_Required(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
-		v.Struct((*structTest)(nil), "param").Required()
+		v.Struct((*validate.DemoUser)(nil), "param").Required()
 	}, "param is required")
 	testSuccess(r, func(v *validate.Validator) {
-		v.Struct(&structTest{}, "param").Required()
+		v.Struct(&validate.DemoUser{}, "param").Required()
 	})
 }
 
 func TestCheckStruct_Custom(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
-		v.Struct(&structTest{}, "param").Custom(true, func(t structTest) bool {
+		v.Struct(&validate.DemoUser{}, "param").Custom(true, func(t validate.DemoUser) bool {
 			return false
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
-		v.Struct(&structTest{}, "param").Custom(false, func(t structTest) bool {
+		v.Struct(&validate.DemoUser{}, "param").Custom(false, func(t validate.DemoUser) bool {
 			return true
 		})
 	})
 	testFail(r, func(v *validate.Validator) {
-		v.Struct((*structTest)(nil), "param").Custom(false, func(t structTest) bool {
+		v.Struct((*validate.DemoUser)(nil), "param").Custom(false, func(t validate.DemoUser) bool {
 			return true
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
-		v.Struct((*structTest)(nil), "param").Custom(true, func(t structTest) bool {
+		v.Struct((*validate.DemoUser)(nil), "param").Custom(true, func(t validate.DemoUser) bool {
 			return false
 		})
 	})
+}
+
+func TestCheckStruct_ShouldStop(t *testing.T) {
+	r := require.New(t)
+	testFail(r, func(v *validate.Validator) {
+		v.Struct(&validate.DemoUser{Id: "id"}, "param").Dive()
+	}, "param.name must not be blank")
 }

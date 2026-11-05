@@ -35,20 +35,20 @@ func TestCheckNumber_Min(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Min(6)
-	}, "param must not be less than 6")
+	}, "param must be at least 6")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Min(5)
 	})
 	testFail(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").Min(0)
-	}, "param must not be less than 0")
+	}, "param must be at least 0")
 }
 
 func TestCheckNumber_Max(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Max(4)
-	}, "param must not be greater than 4")
+	}, "param must be at most 4")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Max(5)
 	})
@@ -57,20 +57,20 @@ func TestCheckNumber_Max(t *testing.T) {
 	})
 }
 
-func TestCheckNumber_Range(t *testing.T) {
+func TestCheckNumber_BetweenInclusive(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Range(1, 4)
-	}, "param must be 1 to 4")
+		v.Int(new(5), "param").BetweenInclusive(1, 4)
+	}, "param must be between 1 and 4, inclusive")
 	testFail(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Range(6, 9)
-	}, "param must be 6 to 9")
+		v.Int(new(5), "param").BetweenInclusive(6, 9)
+	}, "param must be between 6 and 9, inclusive")
 	testSuccess(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Range(1, 9)
+		v.Int(new(5), "param").BetweenInclusive(1, 9)
 	})
 	testFail(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Range(0, 9)
-	}, "param must be 0 to 9")
+		v.Int((*int)(nil), "param").BetweenInclusive(0, 9)
+	}, "param must be between 0 and 9, inclusive")
 }
 
 func TestCheckNumber_Gt(t *testing.T) {
@@ -99,33 +99,39 @@ func TestCheckNumber_Lt(t *testing.T) {
 	})
 }
 
-func TestCheckNumber_Within(t *testing.T) {
+func TestCheckNumber_BetweenExclusive(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Within(1, 5)
-	}, "param must be greater than 1 and less than 5")
+		v.Int(new(5), "param").BetweenExclusive(1, 5)
+	}, "param must be between 1 and 5, exclusive")
 	testFail(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Within(5, 9)
-	}, "param must be greater than 5 and less than 9")
+		v.Int(new(5), "param").BetweenExclusive(5, 9)
+	}, "param must be between 5 and 9, exclusive")
 	testSuccess(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Within(1, 9)
+		v.Int(new(5), "param").BetweenExclusive(1, 9)
 	})
 	testFail(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Within(-5, 5)
-	}, "param must be greater than -5 and less than 5")
+		v.Int((*int)(nil), "param").BetweenExclusive(-5, 5)
+	}, "param must be between -5 and 5, exclusive")
 }
 
 func TestCheckNumber_Enum(t *testing.T) {
 	r := require.New(t)
+	testFail(r, func(v *validate.Validator) {
+		v.Int((*int)(nil), "param").Enum([]int{1, 2, 3})
+	}, "param must be 1, 2, or 3")
+	testFail(r, func(v *validate.Validator) {
+		v.Int(new(5), "param").Enum([]int{1})
+	}, "param must be 1")
+	testFail(r, func(v *validate.Validator) {
+		v.Int(new(5), "param").Enum([]int{1, 2})
+	}, "param must be 1 or 2")
 	testFail(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{1, 2, 3})
 	}, "param must be 1, 2, or 3")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{3, 4, 5})
 	})
-	testFail(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Enum([]int{1, 2, 3})
-	}, "param must be 1, 2, or 3")
 }
 
 func TestCheckNumber_Custom(t *testing.T) {
@@ -134,7 +140,7 @@ func TestCheckNumber_Custom(t *testing.T) {
 		v.Int(new(5), "param").Custom(true, func(t int) bool {
 			return false
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Custom(false, func(t int) bool {
 			return true
@@ -144,7 +150,7 @@ func TestCheckNumber_Custom(t *testing.T) {
 		v.Int((*int)(nil), "param").Custom(false, func(t int) bool {
 			return true
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").Custom(true, func(t int) bool {
 			return false

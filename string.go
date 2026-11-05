@@ -102,10 +102,10 @@ func (c *checkString) Max(max int, opts ...RuleOption) *checkString {
 	return c
 }
 
-// Range 限制字符长度范围（包含边界）
-func (c *checkString) Range(min, max int, opts ...RuleOption) *checkString {
+// BetweenInclusive 限制字符长度范围（包含边界）
+func (c *checkString) BetweenInclusive(min, max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthRange, func() []string {
+	c.v.checkRule(c.s == nil, messageLengthBetweenInclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -142,10 +142,10 @@ func (c *checkString) Lt(max int, opts ...RuleOption) *checkString {
 	return c
 }
 
-// Within 限制字符串长度范围（不包含边界）
-func (c *checkString) Within(min, max int, opts ...RuleOption) *checkString {
+// BetweenExclusive 限制字符串长度范围（不包含边界）
+func (c *checkString) BetweenExclusive(min, max int, opts ...RuleOption) *checkString {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthWithin, func() []string {
+	c.v.checkRule(c.s == nil, messageLengthBetweenExclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0

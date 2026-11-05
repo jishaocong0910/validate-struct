@@ -19,7 +19,7 @@ import "fmt"
 type messageBuilder func(f *FieldInfo) string
 
 func messageDefault(f *FieldInfo) string {
-	return fmt.Sprintf("%s is illegal", f.fieldName)
+	return fmt.Sprintf("%s is invalid", f.fieldName)
 }
 
 func messageRequired(f *FieldInfo) string {
@@ -27,15 +27,15 @@ func messageRequired(f *FieldInfo) string {
 }
 
 func messageMin(f *FieldInfo) string {
-	return fmt.Sprintf("%s must not be less than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must be at least %s", f.fieldName, f.Arg(0))
 }
 
 func messageMax(f *FieldInfo) string {
-	return fmt.Sprintf("%s must not be greater than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must be at most %s", f.fieldName, f.Arg(0))
 }
 
-func messageRange(f *FieldInfo) string {
-	return fmt.Sprintf("%s must be %s to %s", f.fieldName, f.Arg(0), f.Arg(1))
+func messageBetweenInclusive(f *FieldInfo) string {
+	return fmt.Sprintf("%s must be between %s and %s, inclusive", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
 func messageGt(f *FieldInfo) string {
@@ -46,8 +46,8 @@ func messageLt(f *FieldInfo) string {
 	return fmt.Sprintf("%s must be less than %s", f.fieldName, f.Arg(0))
 }
 
-func messageWithin(f *FieldInfo) string {
-	return fmt.Sprintf("%s must be greater than %s and less than %s", f.fieldName, f.Arg(0), f.Arg(1))
+func messageBetweenExclusive(f *FieldInfo) string {
+	return fmt.Sprintf("%s must be between %s and %s, exclusive", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
 func messageEnum(f *FieldInfo) string {
@@ -59,7 +59,7 @@ func messageNotBlank(f *FieldInfo) string {
 }
 
 func messageRegex(f *FieldInfo) string {
-	return fmt.Sprintf("%s's format is illegal", f.fieldName)
+	return fmt.Sprintf("%s has an invalid format", f.fieldName)
 }
 
 func messageNotEmpty(f *FieldInfo) string {
@@ -67,29 +67,29 @@ func messageNotEmpty(f *FieldInfo) string {
 }
 
 func messageLength(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must be %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must have a length of %s", f.fieldName, f.Arg(0))
 }
 
 func messageLengthMin(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must not be less than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must have a length of at least %s", f.fieldName, f.Arg(0))
 }
 
 func messageLengthMax(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must not be greater than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must have a length of at most %s", f.fieldName, f.Arg(0))
 }
 
-func messageLengthRange(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must be %s to %s", f.fieldName, f.Arg(0), f.Arg(1))
+func messageLengthBetweenInclusive(f *FieldInfo) string {
+	return fmt.Sprintf("%s must have a length between %s and %s, inclusive", f.fieldName, f.Arg(0), f.Arg(1))
 }
 
 func messageLengthGt(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must be greater than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must have a length greater than %s", f.fieldName, f.Arg(0))
 }
 
 func messageLengthLt(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must be less than %s", f.fieldName, f.Arg(0))
+	return fmt.Sprintf("%s must have a length less than %s", f.fieldName, f.Arg(0))
 }
 
-func messageLengthWithin(f *FieldInfo) string {
-	return fmt.Sprintf("%s's length must be greater than %s and less than %s", f.fieldName, f.Arg(0), f.Arg(1))
+func messageLengthBetweenExclusive(f *FieldInfo) string {
+	return fmt.Sprintf("%s must have a length between %s and %s, exclusive", f.fieldName, f.Arg(0), f.Arg(1))
 }

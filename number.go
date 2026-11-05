@@ -62,9 +62,9 @@ func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 	return c
 }
 
-func (c *checkNumber[T]) Range(min, max T, opts ...RuleOption) *checkNumber[T] {
+func (c *checkNumber[T]) BetweenInclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.n == nil, messageRange, func() []string {
+	c.v.checkRule(c.n == nil, messageBetweenInclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false
@@ -98,9 +98,9 @@ func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 	return c
 }
 
-func (c *checkNumber[T]) Within(min, max T, opts ...RuleOption) *checkNumber[T] {
+func (c *checkNumber[T]) BetweenExclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.n == nil, messageWithin, func() []string {
+	c.v.checkRule(c.n == nil, messageBetweenExclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false

@@ -81,10 +81,10 @@ func (c *checkSlice[T]) Max(max int, opts ...RuleOption) *checkSlice[T] {
 	return c
 }
 
-// Range 限制长度范围（包含边界）
-func (c *checkSlice[T]) Range(min, max int, opts ...RuleOption) *checkSlice[T] {
+// BetweenInclusive 限制长度范围（包含边界）
+func (c *checkSlice[T]) BetweenInclusive(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthRange, func() []string {
+	c.v.checkRule(c.s == nil, messageLengthBetweenInclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -121,10 +121,10 @@ func (c *checkSlice[T]) Lt(max int, opts ...RuleOption) *checkSlice[T] {
 	return c
 }
 
-// Within 限制长度范围（不包含边界）
-func (c *checkSlice[T]) Within(min, max int, opts ...RuleOption) *checkSlice[T] {
+// BetweenExclusive 限制长度范围（不包含边界）
+func (c *checkSlice[T]) BetweenExclusive(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthWithin, func() []string {
+	c.v.checkRule(c.s == nil, messageLengthBetweenExclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -148,12 +148,12 @@ func (c *checkSlice[T]) Custom(successIfNil bool, custom func(s []T) bool, opts 
 
 // Dive 下沉校验元素
 func (c *checkSlice[T]) Dive(checkElem func(t T)) {
-	if c.v.stop() {
+	if c.v.shouldStop() {
 		return
 	}
 	if c.s != nil && checkElem != nil {
 		for i, t := range c.s {
-			if c.v.stop() {
+			if c.v.shouldStop() {
 				break
 			}
 			fi := c.v.fieldInfo

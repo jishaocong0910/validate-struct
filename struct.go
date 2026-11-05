@@ -42,7 +42,7 @@ func (c *checkStruct[T, V]) Custom(successIfNil bool, custom func(s T) bool, opt
 
 // Dive 下沉校验结构体的字段
 func (c *checkStruct[T, V]) Dive() {
-	if c.v.stop() {
+	if c.v.shouldStop() {
 		return
 	}
 	if c.s != nil {

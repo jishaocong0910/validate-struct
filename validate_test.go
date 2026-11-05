@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"testing"
 
-	validate "github.com/jishaocong0910/validate-struct"
+	"github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,7 +63,7 @@ func TestCheckRule(t *testing.T) {
 		})
 		code, msg, _ := validate.GetResult(v)
 		r.Equal(validate.FAIL, code)
-		r.Equal("param is illegal", msg)
+		r.Equal("param is invalid", msg)
 	}
 	{
 		// nil导致错误
@@ -125,9 +125,9 @@ func TestFieldTypeFunc(t *testing.T) {
 func TestCheck(t *testing.T) {
 	r := require.New(t)
 	{
-		u := demoUser{
-			id:   "1147",
-			name: "name",
+		u := validate.DemoUser{
+			Id:   "1147",
+			Name: "name",
 		}
 		code, msg, msgs := validate.Check(nil, &u)
 		r.Equal(validate.SUCCESS, code)
@@ -135,7 +135,7 @@ func TestCheck(t *testing.T) {
 		r.Nil(msgs)
 	}
 	{
-		var u *demoUser
+		var u *validate.DemoUser
 		code, msg, msgs := validate.Check(nil, u)
 		r.Equal("", code)
 		r.Equal("", msg)
@@ -145,11 +145,11 @@ func TestCheck(t *testing.T) {
 
 func TestDive(t *testing.T) {
 	r := require.New(t)
-	u := demoUser{
-		attach: &demoAttach{
-			images:   []demoImage{{}, {}},
-			score:    map[string]int{"math": 101},
-			profiles: map[string]demoProfile{"123456": {}},
+	u := validate.DemoUser{
+		Attach: &validate.DemoAttach{
+			Images:   []validate.DemoImage{{}, {}},
+			Score:    map[string]int{"math": 101},
+			Profiles: map[string]validate.DemoProfile{"123456": {}},
 		},
 	}
 
@@ -163,67 +163,7 @@ func TestDive(t *testing.T) {
 	r.Equal("attach.images[0].id must not be blank", msgs[4])
 	r.Equal("attach.images[1].url must not be blank", msgs[5])
 	r.Equal("attach.images[1].id must not be blank", msgs[6])
-	r.Equal("attach.score$value must not be greater than 100", msgs[7])
-	r.Equal("attach.profiles$key's length must not be greater than 4", msgs[8])
+	r.Equal("attach.score$value must be at most 100", msgs[7])
+	r.Equal("attach.profiles$key must have a length of at most 4", msgs[8])
 	r.Equal("attach.profiles$value.name must not be blank", msgs[9])
-}
-
-type demoBase struct {
-	id string
-}
-
-func (d demoBase) Checklist(v *validate.Validator) {
-	v.String(&d.id, "id").NotBlank()
-}
-
-type demoUser struct {
-	demoBase
-	name   string
-	attach *demoAttach
-}
-
-func (d demoUser) Checklist(v *validate.Validator) {
-	v.Embed(&d.demoBase)
-	v.String(&d.name, "name").NotBlank()
-	v.Struct(d.attach, "attach").Dive()
-}
-
-type demoAttach struct {
-	demoBase
-	images   []demoImage
-	score    map[string]int
-	profiles map[string]demoProfile
-}
-
-func (d demoAttach) Checklist(v *validate.Validator) {
-	v.Embed(&d.demoBase)
-	v.Slice(d.images, "images").Dive(func(i demoImage) {
-		v.Struct(&i, "not work").Dive()
-	})
-	v.Map(d.score, "score").Dive(nil, func(value int) {
-		v.Int(&value, "not work").Max(100)
-	})
-	v.Map(d.profiles, "profiles").Dive(func(k string) {
-		v.String(&k, "not work").Max(4)
-	}, func(value demoProfile) {
-		v.Struct(&value, "not work").Dive()
-	})
-}
-
-type demoImage struct {
-	url string
-	demoBase
-}
-
-func (d demoImage) Checklist(v *validate.Validator) {
-	v.String(&d.url, "url").NotBlank()
-	v.Embed(&d.demoBase)
-}
-
-type demoProfile struct {
-	Name string
-}
-
-func (s demoProfile) Checklist(v *validate.Validator) {
-	v.String(&s.Name, "name").NotBlank()
 }

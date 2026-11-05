@@ -79,10 +79,10 @@ func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 	return c
 }
 
-// Range 限制长度范围（包含边界）
-func (c *checkMap[K, V]) Range(min, max int, opts ...RuleOption) *checkMap[K, V] {
+// BetweenInclusive 限制长度范围（包含边界）
+func (c *checkMap[K, V]) BetweenInclusive(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.m == nil, messageLengthRange, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthBetweenInclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -119,10 +119,10 @@ func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 	return c
 }
 
-// Within 限制长度范围（不包含边界）
-func (c *checkMap[K, V]) Within(min, max int, opts ...RuleOption) *checkMap[K, V] {
+// BetweenExclusive 限制长度范围（不包含边界）
+func (c *checkMap[K, V]) BetweenExclusive(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.m == nil, messageLengthWithin, func() []string {
+	c.v.checkRule(c.m == nil, messageLengthBetweenExclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -146,13 +146,13 @@ func (c *checkMap[K, V]) Custom(successIfNil bool, custom func(m map[K]V) bool, 
 
 // Dive 下沉校验key和value
 func (c *checkMap[K, V]) Dive(checkKey func(key K), checkValue func(value V)) {
-	if c.v.stop() {
+	if c.v.shouldStop() {
 		return
 	}
 	if c.m != nil {
 		for k, v := range c.m {
 			if checkKey != nil {
-				if c.v.stop() {
+				if c.v.shouldStop() {
 					break
 				}
 				fi := c.v.fieldInfo
@@ -161,7 +161,7 @@ func (c *checkMap[K, V]) Dive(checkKey func(key K), checkValue func(value V)) {
 				c.v.fieldInfo = fi
 			}
 			if checkValue != nil {
-				if c.v.stop() {
+				if c.v.shouldStop() {
 					break
 				}
 				fi := c.v.fieldInfo

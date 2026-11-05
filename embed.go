@@ -20,7 +20,7 @@ type checkEmbed[T any, V validatable[T]] struct {
 }
 
 func (c *checkEmbed[T, V]) dive() {
-	if c.v.stop() {
+	if c.v.shouldStop() {
 		return
 	}
 	if c.e != nil {

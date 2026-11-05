@@ -177,7 +177,7 @@ func (v *Validator) Embed[T any, V validatable[T]](e V) {
 	c.dive()
 }
 
-func (v *Validator) stop() bool {
+func (v *Validator) shouldStop() bool {
 	return v.hasError && !v.all
 }
 
@@ -226,7 +226,7 @@ func (v *Validator) beforeCheckEmbed() {
 }
 
 func (v *Validator) checkRule(isNil bool, messageBuilder messageBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
-	if v.stop() {
+	if v.shouldStop() {
 		return
 	}
 	var fail bool
@@ -271,6 +271,8 @@ type FieldInfo struct {
 	isElem bool
 	// nil时忽略校验
 	omitNil bool
+	// 修字段值函数
+	amend func(a any) any
 	// 字段名
 	fieldName string
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段
@@ -294,22 +296,20 @@ func (f *FieldInfo) Arg(i int) string {
 }
 
 func (f *FieldInfo) Args() string {
-	l := len(f.args)
-	if l == 0 {
-		return ""
-	}
-	if l == 1 {
-		return f.args[0]
-	}
-	if l == 2 {
-		return f.args[0] + " or " + f.args[1]
-	}
 	var builder strings.Builder
-	for i := 0; i < l-1; i++ {
-		builder.WriteString(f.args[i])
-		builder.WriteString(", ")
+	if len(f.args) > 0 {
+		builder.WriteString(f.args[0])
+		for i := 1; i < len(f.args)-1; i++ {
+			builder.WriteString(", ")
+			builder.WriteString(f.args[i])
+		}
+		if len(f.args) > 1 {
+			if len(f.args) > 2 {
+				builder.WriteString(",")
+			}
+			builder.WriteString(" or ")
+			builder.WriteString(f.args[len(f.args)-1])
+		}
 	}
-	builder.WriteString("or ")
-	builder.WriteString(f.args[l-1])
 	return builder.String()
 }

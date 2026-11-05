@@ -37,7 +37,7 @@ func TestCheckAny_Custom(t *testing.T) {
 		v.Any(new(5), "param").Custom(true, func(t int) bool {
 			return false
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Any(new(5), "param").Custom(false, func(t int) bool {
 			return true
@@ -47,7 +47,7 @@ func TestCheckAny_Custom(t *testing.T) {
 		v.Any((*any)(nil), "param").Custom(false, func(t any) bool {
 			return true
 		})
-	}, "param is illegal")
+	}, "param is invalid")
 	testSuccess(r, func(v *validate.Validator) {
 		v.Any((*any)(nil), "param").Custom(true, func(t any) bool {
 			return false
