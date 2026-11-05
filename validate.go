@@ -184,13 +184,15 @@ func (v *Validator) shouldStop() bool {
 func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
 	if v.fieldInfo.isElem {
 		v.fieldInfo = &FieldInfo{
-			fieldName: v.fieldInfo.fieldName,
-			isElem:    true,
+			fieldName:   v.fieldInfo.fieldName,
+			isElem:      true,
+			parentIsNil: v.fieldInfo.parentIsNil,
 		}
 	} else {
 		v.fieldInfo = &FieldInfo{
 			fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 			fieldName:       v.fieldInfo.fieldNamePrefix + fieldName,
+			parentIsNil:     v.fieldInfo.parentIsNil,
 		}
 	}
 	for _, o := range opts {
@@ -209,6 +211,7 @@ func (v *Validator) beforeCheckRule(opts []RuleOption) {
 func (v *Validator) beforeDiveStruct[T any, V validatable[T]](s V) V {
 	v.fieldInfo = &FieldInfo{
 		fieldNamePrefix: v.fieldInfo.fieldName + ".",
+		parentIsNil:     v.fieldInfo.parentIsNil,
 	}
 	if s == nil {
 		v.fieldInfo.parentIsNil = true
@@ -221,6 +224,7 @@ func (v *Validator) beforeDiveStruct[T any, V validatable[T]](s V) V {
 func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](e V) V {
 	v.fieldInfo = &FieldInfo{
 		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
+		parentIsNil:     v.fieldInfo.parentIsNil,
 	}
 	if e == nil {
 		v.fieldInfo.parentIsNil = true

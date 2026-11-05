@@ -65,7 +65,10 @@ func TestCheckStruct_Dive(t *testing.T) {
 	}, "param.id must not be blank")
 	testFail(r, func(v *validate.Validator) {
 		v.Struct((*validate.DemoBase)(nil), "param").Dive()
-	}, "param.id must not be blank")
+	}, "param.id is required")
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*validate.DemoCommunication)(nil), "param").Dive()
+	}, "param.address.city is required")
 }
 
 func TestCheckStruct_ShouldStop(t *testing.T) {

@@ -1,6 +1,6 @@
 # validate-struct
 
-用于Golang的的编程式结构体校验工具，可实现**零代码入侵**，支持自定义错误码和错误消息，不使用反射，处理速度理论上比使用标签的校验工具快。
+用于Golang的的编程式结构体校验工具，可实现零代码入侵，支持自定义错误码和错误消息，不使用反射，处理速度理论上比使用标签的校验工具快。
 
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/jishaocong0910/valicate-struct)
 [![Go Reference](https://pkg.go.dev/badge/github.com/jishaocong0910/gverify.svg)](https://pkg.go.dev/github.com/jishaocong0910/gverify)

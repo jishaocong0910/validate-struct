@@ -111,7 +111,7 @@ type DemoBase struct {
 }
 
 func (d DemoBase) Checklist(v *Validator) {
-	v.String(&d.Id, "id").NotBlank()
+	v.String(&d.Id, "id").Required().NotBlank()
 }
 
 type DemoUser struct {
@@ -164,4 +164,28 @@ type DemoProfile struct {
 
 func (s DemoProfile) Checklist(v *Validator) {
 	v.String(&s.Name, "name").NotBlank()
+}
+
+type DemoCommunication struct {
+	Address DemoAddress
+}
+
+func (d *DemoCommunication) Checklist(v *Validator) {
+	v.Struct(&d.Address, "address").Dive()
+}
+
+type DemoAddress struct {
+	City string
+}
+
+func (d *DemoAddress) Checklist(v *Validator) {
+	v.String(&d.City, "city").Required().NotBlank()
+}
+
+type DemoTag struct {
+	DemoBase
+}
+
+func (d *DemoTag) Checklist(v *Validator) {
+	v.Embed(&d.DemoBase)
 }

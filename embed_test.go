@@ -17,7 +17,10 @@ func TestCheckEmbed_Required(t *testing.T) {
 	}, "id must not be blank")
 	testFail(r, func(v *validate.Validator) {
 		v.Embed(&validate.DemoImage{Url: "url"})
-	}, "id must not be blank")
+	}, "id is required")
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*validate.DemoTag)(nil), "param").Dive()
+	}, "param.id is required")
 }
 
 func TestCheckEmbed_ShouldStop(t *testing.T) {
