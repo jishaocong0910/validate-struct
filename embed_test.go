@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCheckEmbed_Required(t *testing.T) {
+func TestCheckEmbed_Dive(t *testing.T) {
 	r := require.New(t)
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Embed(&validate.DemoImage{Url: "url", DemoBase: &validate.DemoBase{Id: "id"}})
@@ -18,12 +18,6 @@ func TestCheckEmbed_Required(t *testing.T) {
 	checklistFail(r, func(v *validate.Validator) {
 		v.Embed(&validate.DemoImage{Url: "url"})
 	}, "id is required")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoCategory)(nil), "param").Dive()
-	}, "param.id is required")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoProduct)(nil), "param").Dive()
-	}, "param.category.id is required")
 }
 
 func TestCheckEmbed_ShouldStop(t *testing.T) {

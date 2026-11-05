@@ -60,15 +60,12 @@ func TestCheckStruct_Dive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoBase{Id: "id"}, "param").Dive()
 	})
+	checklistSuccess(r, func(v *validate.Validator) {
+		v.Struct((*validate.DemoBase)(nil), "param").Dive()
+	})
 	checklistFail(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoBase{}, "param").Dive()
 	}, "param.id must not be blank")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoBase)(nil), "param").Dive()
-	}, "param.id is required")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoCommunication)(nil), "param").Dive()
-	}, "param.address.city is required")
 }
 
 func TestCheckStruct_ShouldStop(t *testing.T) {
@@ -76,24 +73,4 @@ func TestCheckStruct_ShouldStop(t *testing.T) {
 	checklistFail(r, func(v *validate.Validator) {
 		v.Struct(&validate.DemoUser{Id: "id"}, "param").Dive()
 	}, "param.name must not be blank")
-}
-
-func TestCheckStruct_DiveCycle(t *testing.T) {
-	node := &validate.DemoNode{}
-	node.Next = node
-
-	code, _, messages := validate.Check(nil, node, validate.All())
-	require.Equal(t, validate.FAIL, code)
-	require.Equal(t, []string{"name must not be blank"}, messages)
-}
-
-func TestCheckStruct_VirtualDiveCycle(t *testing.T) {
-	node := &validate.DemoNode{}
-
-	code, _, messages := validate.Check(nil, node, validate.All())
-	require.Equal(t, validate.FAIL, code)
-	require.Equal(t, []string{
-		"name must not be blank",
-		"next.name must not be blank",
-	}, messages)
 }

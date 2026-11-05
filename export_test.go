@@ -38,7 +38,7 @@ func SetHasError(v *Validator) {
 }
 
 func SetAll(v *Validator) {
-	v.all = true
+	v.allRule = true
 }
 
 func SetFieldName(v *Validator, fieldName string) {
@@ -164,38 +164,6 @@ func (s DemoProfile) Checklist(v *Validator) {
 	v.String(&s.Name, "name").NotBlank()
 }
 
-type DemoCommunication struct {
-	Address DemoAddress
-}
-
-func (d *DemoCommunication) Checklist(v *Validator) {
-	v.Struct(&d.Address, "address").Dive()
-}
-
-type DemoAddress struct {
-	City string
-}
-
-func (d *DemoAddress) Checklist(v *Validator) {
-	v.String(&d.City, "city").Required().NotBlank()
-}
-
-type DemoCategory struct {
-	DemoBase
-}
-
-func (d *DemoCategory) Checklist(v *Validator) {
-	v.Embed(&d.DemoBase)
-}
-
-type DemoProduct struct {
-	Category DemoCategory
-}
-
-func (d DemoProduct) Checklist(v *Validator) {
-	v.Struct(&d.Category, "category").Dive()
-}
-
 type DemoNode struct {
 	Name string
 	Next *DemoNode
@@ -204,4 +172,14 @@ type DemoNode struct {
 func (d *DemoNode) Checklist(v *Validator) {
 	v.String(&d.Name, "name").NotBlank()
 	v.Struct(d.Next, "next").Dive()
+}
+
+type DemoNode2 struct {
+	Name string
+	*DemoNode2
+}
+
+func (d *DemoNode2) Checklist(v *Validator) {
+	v.String(&d.Name, "name").NotBlank()
+	v.Embed(d.DemoNode2)
 }

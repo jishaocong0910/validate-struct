@@ -16,9 +16,9 @@ package validate
 
 type ValidatorOption func(v *Validator)
 
-func All() ValidatorOption {
+func AllRule() ValidatorOption {
 	return func(v *Validator) {
-		v.all = true
+		v.allRule = true
 	}
 }
 

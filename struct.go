@@ -16,14 +16,14 @@ package validate
 
 // 校验结构体
 type checkStruct[T any, V validatable[T]] struct {
-	v   *Validator
-	src V
+	v     *Validator
+	value V
 }
 
 // Required 限制不能为nil
 func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.src == nil, messageRequired, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.value == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -32,10 +32,10 @@ func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
 // Custom 自定义校验
 func (c *checkStruct[T, V]) Custom(successIfNil bool, custom func(s T) bool, opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.src == nil, messageDefault, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.value == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
-		return custom(*c.src)
+		return custom(*c.value)
 	})
 	return c
 }
@@ -45,9 +45,9 @@ func (c *checkStruct[T, V]) Dive() {
 	if c.v.shouldStop() {
 		return
 	}
-	diveSrc, after := c.v.beforeDiveStruct(c.src, true)
-	if diveSrc != nil {
-		diveSrc.Checklist(c.v)
+	allowed, after := c.v.beforeDiveStruct(c.value)
+	if allowed {
+		c.value.Checklist(c.v)
 		if after != nil {
 			after()
 		}

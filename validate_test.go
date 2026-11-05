@@ -25,7 +25,6 @@ import (
 func TestCheckRule(t *testing.T) {
 	r := require.New(t)
 	{
-		// 成功
 		v := validate.NewValidator()
 		validate.CheckRule(v, false, nil, nil, func() bool {
 			return false
@@ -36,7 +35,6 @@ func TestCheckRule(t *testing.T) {
 		r.Equal(validate.SUCCESS, code)
 	}
 	{
-		// 指定code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
 		validate.CheckRule(v, false, []validate.RuleOption{validate.Code("MY_CODE"), validate.Message(func(b *validate.FieldInfo) string {
@@ -53,7 +51,6 @@ func TestCheckRule(t *testing.T) {
 		r.Equal("param a, b, or c", message)
 	}
 	{
-		// 默认code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
 		validate.CheckRule(v, false, nil, nil, func() bool {
@@ -66,7 +63,6 @@ func TestCheckRule(t *testing.T) {
 		r.Equal("param is invalid", message)
 	}
 	{
-		// nil导致错误
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
 		validate.CheckRule(v, true, nil, nil, func() bool {
@@ -78,7 +74,6 @@ func TestCheckRule(t *testing.T) {
 		r.Equal(validate.FAIL, code)
 	}
 	{
-		// 忽略nil
 		v := validate.NewValidator()
 		validate.SetOmitNil(v)
 		validate.CheckRule(v, true, nil, nil, func() bool {
@@ -90,7 +85,6 @@ func TestCheckRule(t *testing.T) {
 		r.Equal(validate.SUCCESS, code)
 	}
 	{
-		// 中断
 		v := validate.NewValidator()
 		validate.SetHasError(v)
 		validate.CheckRule(v, true, []validate.RuleOption{validate.Code("MY_CODE")}, nil, func() bool {
@@ -141,7 +135,7 @@ func TestCheck(t *testing.T) {
 				Profiles: map[string]validate.DemoProfile{"123456": {}},
 			},
 		}
-		code, _, messages := validate.Check(nil, &u, validate.All())
+		code, _, messages := validate.Check(nil, &u, validate.AllRule())
 		r.Equal(validate.FAIL, code)
 		r.Len(messages, 12)
 		r.Equal("id must not be blank", messages[0])
@@ -157,4 +151,20 @@ func TestCheck(t *testing.T) {
 		r.Equal("attach.profiles$key must have a length of at most 4", messages[10])
 		r.Equal("attach.profiles$value.name must not be blank", messages[11])
 	}
+}
+
+func TestCheck_DiveCycle(t *testing.T) {
+	r := require.New(t)
+	node := &validate.DemoNode{}
+	node.Next = node
+
+	code, _, messages := validate.Check(nil, node, validate.AllRule())
+	r.Equal(validate.FAIL, code)
+	r.Equal([]string{"name must not be blank"}, messages)
+}
+
+func TestCheck_VirtualDiveCycle(t *testing.T) {
+	code, _, messages := validate.Check(nil, (*validate.DemoNode2)(nil), validate.AllRule())
+	require.Equal(t, validate.FAIL, code)
+	require.Equal(t, []string{"name must not be blank"}, messages)
 }
