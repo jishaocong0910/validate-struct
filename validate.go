@@ -212,11 +212,11 @@ func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V) (diveSrc V,
 		key := any((*T)(nil))
 		if _, ok := v.virtualDiveTypes[key]; !ok {
 			prev := v.fieldInfo
-			v.fieldInfo.virtualDive = true
 			v.fieldInfo = &FieldInfo{
 				fieldNamePrefix: v.fieldInfo.fieldName + ".",
 				virtualDive:     v.fieldInfo.virtualDive,
 			}
+			v.fieldInfo.virtualDive = true
 			v.virtualDiveTypes[key] = struct{}{}
 			diveSrc = V(new(T))
 			after = func() {
@@ -242,14 +242,16 @@ func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](src V) (diveSrc V, 
 	if src == nil {
 		key := any((*T)(nil))
 		if _, ok := v.virtualDiveTypes[key]; !ok {
-			v.fieldInfo.virtualDive = true
+			prev := v.fieldInfo
 			v.fieldInfo = &FieldInfo{
 				fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 				virtualDive:     v.fieldInfo.virtualDive,
 			}
+			v.fieldInfo.virtualDive = true
 			v.virtualDiveTypes[key] = struct{}{}
 			diveSrc = V(new(T))
 			after = func() {
+				v.fieldInfo = prev
 				delete(v.virtualDiveTypes, key)
 			}
 		}

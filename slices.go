@@ -151,7 +151,7 @@ func (c *checkSlice[T]) Dive(checkElem func(t T)) {
 	if c.v.shouldStop() {
 		return
 	}
-	if c.s != nil && checkElem != nil {
+	if c.s != nil && checkElem != nil && !c.v.fieldInfo.virtualDive {
 		for i, t := range c.s {
 			if c.v.shouldStop() {
 				break

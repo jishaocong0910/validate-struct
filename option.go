@@ -38,7 +38,7 @@ func Code(code string) RuleOption {
 	}
 }
 
-func Msg(messageBuilder messageBuilder) RuleOption {
+func Message(messageBuilder messageBuilder) RuleOption {
 	return func(o *FieldInfo) {
 		o.messageBuilder = messageBuilder
 	}

@@ -39,7 +39,7 @@ func TestCheckRule(t *testing.T) {
 		// 指定code和msg
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, false, []validate.RuleOption{validate.Code("MY_CODE"), validate.Msg(func(b *validate.FieldInfo) string {
+		validate.CheckRule(v, false, []validate.RuleOption{validate.Code("MY_CODE"), validate.Message(func(b *validate.FieldInfo) string {
 			return fmt.Sprintf("%s %s", b.FieldName(), b.Args())
 		})}, func() []string {
 			return []string{"a", "b", "c"}
