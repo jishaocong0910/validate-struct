@@ -34,15 +34,11 @@ type validatable[T any] interface {
 }
 
 func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorOption) (code string, message string, messages []string) {
-	if v == nil {
-		return
-	}
-
 	validator := newValidator(ctx)
 	for _, o := range opts {
 		o(validator)
 	}
-	v.Checklist(validator)
+	validator.Embed(v)
 
 	if !validator.hasError {
 		code = SUCCESS
@@ -72,8 +68,8 @@ type Validator struct {
 	messages []string
 	// 当前校验字段的信息
 	fieldInfo *FieldInfo
-	// 虚拟下沉递归保护
-	virtualDiveTypes map[any]struct{}
+	// 用于递归保护
+	diveTypes map[any]struct{}
 }
 
 func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkBool {
@@ -207,62 +203,36 @@ func (v *Validator) beforeCheckRule(opts []RuleOption) {
 	}
 }
 
-func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V) (diveSrc V, after func()) {
+func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V, isEmbed bool) (diveSrc V, after func()) {
+	var key any
 	if src == nil {
-		key := any((*T)(nil))
-		if _, ok := v.virtualDiveTypes[key]; !ok {
-			prev := v.fieldInfo
-			v.fieldInfo = &FieldInfo{
-				fieldNamePrefix: v.fieldInfo.fieldName + ".",
-				virtualDive:     v.fieldInfo.virtualDive,
-			}
-			v.fieldInfo.virtualDive = true
-			v.virtualDiveTypes[key] = struct{}{}
-			diveSrc = V(new(T))
-			after = func() {
-				v.fieldInfo = prev
-				delete(v.virtualDiveTypes, key)
-			}
-		}
+		key = (*T)(nil)
 	} else {
+		key = src
+	}
+	if _, ok := v.diveTypes[key]; !ok {
 		prev := v.fieldInfo
+		var fieldNamePrefix string
+		if isEmbed {
+			fieldNamePrefix = v.fieldInfo.fieldNamePrefix
+		} else {
+			fieldNamePrefix = v.fieldInfo.fieldName + "."
+		}
 		v.fieldInfo = &FieldInfo{
-			fieldNamePrefix: v.fieldInfo.fieldName + ".",
+			fieldNamePrefix: fieldNamePrefix,
 			virtualDive:     v.fieldInfo.virtualDive,
 		}
-		diveSrc = src
-		after = func() {
-			v.fieldInfo = prev
-		}
-	}
-	return
-}
-
-func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](src V) (diveSrc V, after func()) {
-	if src == nil {
-		key := any((*T)(nil))
-		if _, ok := v.virtualDiveTypes[key]; !ok {
-			prev := v.fieldInfo
-			v.fieldInfo = &FieldInfo{
-				fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
-				virtualDive:     v.fieldInfo.virtualDive,
-			}
+		if src == nil {
+			src = V(new(T))
 			v.fieldInfo.virtualDive = true
-			v.virtualDiveTypes[key] = struct{}{}
-			diveSrc = V(new(T))
-			after = func() {
-				v.fieldInfo = prev
-				delete(v.virtualDiveTypes, key)
-			}
 		}
-	} else {
-		v.fieldInfo = &FieldInfo{
-			fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
-			virtualDive:     v.fieldInfo.virtualDive,
+		v.diveTypes[key] = struct{}{}
+		return src, func() {
+			v.fieldInfo = prev
+			delete(v.diveTypes, key)
 		}
-		diveSrc = src
 	}
-	return
+	return nil, nil
 }
 
 func (v *Validator) beforeDiveSliceMap(elemName string) (after func()) {
@@ -318,7 +288,7 @@ func newValidator(ctx context.Context) *Validator {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return &Validator{ctx: ctx, fieldInfo: &FieldInfo{}, virtualDiveTypes: make(map[any]struct{})}
+	return &Validator{ctx: ctx, fieldInfo: &FieldInfo{}, diveTypes: make(map[any]struct{})}
 }
 
 // FieldInfo 字段信息

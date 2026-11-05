@@ -134,37 +134,27 @@ func TestCheck(t *testing.T) {
 		r.Nil(messages)
 	}
 	{
-		var u *validate.DemoUser
-		code, message, messages := validate.Check(nil, u)
-		r.Equal("", code)
-		r.Equal("", message)
-		r.Nil(messages)
+		u := validate.DemoUser{
+			Attach: &validate.DemoAttach{
+				Images:   []validate.DemoImage{{}, {}},
+				Score:    map[string]int{"math": 101},
+				Profiles: map[string]validate.DemoProfile{"123456": {}},
+			},
+		}
+		code, _, messages := validate.Check(nil, &u, validate.All())
+		r.Equal(validate.FAIL, code)
+		r.Len(messages, 12)
+		r.Equal("id must not be blank", messages[0])
+		r.Equal("name must not be blank", messages[1])
+		r.Equal("attach.id must not be blank", messages[2])
+		r.Equal("attach.images[0].url must not be blank", messages[3])
+		r.Equal("attach.images[0].id is required", messages[4])
+		r.Equal("attach.images[0].id must not be blank", messages[5])
+		r.Equal("attach.images[1].url must not be blank", messages[6])
+		r.Equal("attach.images[1].id is required", messages[7])
+		r.Equal("attach.images[1].id must not be blank", messages[8])
+		r.Equal("attach.score$value must be at most 100", messages[9])
+		r.Equal("attach.profiles$key must have a length of at most 4", messages[10])
+		r.Equal("attach.profiles$value.name must not be blank", messages[11])
 	}
-}
-
-func TestDive(t *testing.T) {
-	r := require.New(t)
-	u := validate.DemoUser{
-		Attach: &validate.DemoAttach{
-			Images:   []validate.DemoImage{{}, {}},
-			Score:    map[string]int{"math": 101},
-			Profiles: map[string]validate.DemoProfile{"123456": {}},
-		},
-	}
-
-	code, _, messages := validate.Check(nil, &u, validate.All())
-	r.Equal(validate.FAIL, code)
-	r.Len(messages, 12)
-	r.Equal("id must not be blank", messages[0])
-	r.Equal("name must not be blank", messages[1])
-	r.Equal("attach.id must not be blank", messages[2])
-	r.Equal("attach.images[0].url must not be blank", messages[3])
-	r.Equal("attach.images[0].id is required", messages[4])
-	r.Equal("attach.images[0].id must not be blank", messages[5])
-	r.Equal("attach.images[1].url must not be blank", messages[6])
-	r.Equal("attach.images[1].id is required", messages[7])
-	r.Equal("attach.images[1].id must not be blank", messages[8])
-	r.Equal("attach.score$value must be at most 100", messages[9])
-	r.Equal("attach.profiles$key must have a length of at most 4", messages[10])
-	r.Equal("attach.profiles$value.name must not be blank", messages[11])
 }
