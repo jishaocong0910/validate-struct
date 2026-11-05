@@ -10,10 +10,13 @@ import (
 func TestCheckEmbed_Required(t *testing.T) {
 	r := require.New(t)
 	testSuccess(r, func(v *validate.Validator) {
-		v.Embed(&validate.DemoImage{Url: "url", Id: "id"})
+		v.Embed(&validate.DemoImage{Url: "url", DemoBase: &validate.DemoBase{Id: "id"}})
 	})
 	testFail(r, func(v *validate.Validator) {
-		v.Embed(&validate.DemoImage{Url: "url", DemoBase: validate.DemoBase{}})
+		v.Embed(&validate.DemoImage{Url: "url", DemoBase: &validate.DemoBase{}})
+	}, "id must not be blank")
+	testFail(r, func(v *validate.Validator) {
+		v.Embed(&validate.DemoImage{Url: "url"})
 	}, "id must not be blank")
 }
 

@@ -150,12 +150,12 @@ func (d DemoAttach) Checklist(v *Validator) {
 
 type DemoImage struct {
 	Url string
-	DemoBase
+	*DemoBase
 }
 
 func (d DemoImage) Checklist(v *Validator) {
 	v.String(&d.Url, "url").NotBlank()
-	v.Embed(&d.DemoBase)
+	v.Embed(d.DemoBase)
 }
 
 type DemoProfile struct {

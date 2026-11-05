@@ -30,17 +30,6 @@ func OmitNil() FieldOption {
 	}
 }
 
-func Amend[T any](amend func(t T) T) FieldOption {
-	return func(o *FieldInfo) {
-		o.amend = func(a any) any {
-			if t, ok := a.(T); ok {
-				return amend(t)
-			}
-			return a
-		}
-	}
-}
-
 type RuleOption func(*FieldInfo)
 
 func Code(code string) RuleOption {

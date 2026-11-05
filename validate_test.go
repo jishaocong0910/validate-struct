@@ -125,8 +125,7 @@ func TestFieldTypeFunc(t *testing.T) {
 func TestCheck(t *testing.T) {
 	r := require.New(t)
 	{
-		u := validate.DemoUser{
-			Id:   "1147",
+		u := validate.DemoProfile{
 			Name: "name",
 		}
 		code, msg, msgs := validate.Check(nil, &u)

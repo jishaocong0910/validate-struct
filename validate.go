@@ -55,6 +55,7 @@ func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorO
 			code = FAIL
 		}
 	}
+
 	messages = validator.msgs
 	if len(messages) > 0 {
 		message = messages[0]
@@ -172,7 +173,6 @@ func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *che
 }
 
 func (v *Validator) Embed[T any, V validatable[T]](e V) {
-	v.beforeCheckEmbed()
 	c := &checkEmbed[T, V]{v: v, e: e}
 	c.dive()
 }
@@ -206,22 +206,34 @@ func (v *Validator) beforeCheckRule(opts []RuleOption) {
 	}
 }
 
-func (v *Validator) beforeDiveStruct() {
+func (v *Validator) beforeDiveStruct[T any, V validatable[T]](s V) V {
 	v.fieldInfo = &FieldInfo{
 		fieldNamePrefix: v.fieldInfo.fieldName + ".",
 	}
+	if s == nil {
+		v.fieldInfo.parentIsNil = true
+		var t T
+		return &t
+	}
+	return s
+}
+
+func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](e V) V {
+	v.fieldInfo = &FieldInfo{
+		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
+	}
+	if e == nil {
+		v.fieldInfo.parentIsNil = true
+		var t T
+		return &t
+	}
+	return e
 }
 
 func (v *Validator) beforeDiveSliceMap(elemName string) {
 	v.fieldInfo = &FieldInfo{
 		fieldName: v.fieldInfo.fieldName + elemName,
 		isElem:    true,
-	}
-}
-
-func (v *Validator) beforeCheckEmbed() {
-	v.fieldInfo = &FieldInfo{
-		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 	}
 }
 
@@ -271,8 +283,8 @@ type FieldInfo struct {
 	isElem bool
 	// nil时忽略校验
 	omitNil bool
-	// 修字段值函数
-	amend func(a any) any
+	// 父级结构体为nil
+	parentIsNil bool
 	// 字段名
 	fieldName string
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段

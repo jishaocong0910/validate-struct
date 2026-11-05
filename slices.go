@@ -25,7 +25,7 @@ type checkSlice[T any] struct {
 // Required 限制不能为nil
 func (c *checkSlice[T]) Required(opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageRequired, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -34,7 +34,7 @@ func (c *checkSlice[T]) Required(opts ...RuleOption) *checkSlice[T] {
 // NotEmpty 限制不能为空
 func (c *checkSlice[T]) NotEmpty(opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageNotEmpty, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageNotEmpty, nil, func() bool {
 		return false
 	}, func() bool {
 		return len(c.s) != 0
@@ -45,7 +45,7 @@ func (c *checkSlice[T]) NotEmpty(opts ...RuleOption) *checkSlice[T] {
 // Length 限制长度范围
 func (c *checkSlice[T]) Length(l int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLength, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLength, func() []string {
 		return formatInt(l)
 	}, func() bool {
 		return l == 0
@@ -58,7 +58,7 @@ func (c *checkSlice[T]) Length(l int, opts ...RuleOption) *checkSlice[T] {
 // Min 限制长度最小值
 func (c *checkSlice[T]) Min(min int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthMin, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthMin, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min <= 0
@@ -71,7 +71,7 @@ func (c *checkSlice[T]) Min(min int, opts ...RuleOption) *checkSlice[T] {
 // Max 限制长度最大值
 func (c *checkSlice[T]) Max(max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthMax, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthMax, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max >= 0
@@ -84,7 +84,7 @@ func (c *checkSlice[T]) Max(max int, opts ...RuleOption) *checkSlice[T] {
 // BetweenInclusive 限制长度范围（包含边界）
 func (c *checkSlice[T]) BetweenInclusive(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthBetweenInclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthBetweenInclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -98,7 +98,7 @@ func (c *checkSlice[T]) BetweenInclusive(min, max int, opts ...RuleOption) *chec
 // Gt 限制长度必须大于指定值
 func (c *checkSlice[T]) Gt(min int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthGt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthGt, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min < 0
@@ -111,7 +111,7 @@ func (c *checkSlice[T]) Gt(min int, opts ...RuleOption) *checkSlice[T] {
 // Lt 限制长度必须小于指定值
 func (c *checkSlice[T]) Lt(max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthLt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthLt, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max > 0
@@ -124,7 +124,7 @@ func (c *checkSlice[T]) Lt(max int, opts ...RuleOption) *checkSlice[T] {
 // BetweenExclusive 限制长度范围（不包含边界）
 func (c *checkSlice[T]) BetweenExclusive(min, max int, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageLengthBetweenExclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageLengthBetweenExclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -138,7 +138,7 @@ func (c *checkSlice[T]) BetweenExclusive(min, max int, opts ...RuleOption) *chec
 // Custom 自定义校验
 func (c *checkSlice[T]) Custom(successIfNil bool, custom func(s []T) bool, opts ...RuleOption) *checkSlice[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageDefault, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(c.s)

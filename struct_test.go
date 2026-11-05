@@ -55,6 +55,19 @@ func TestCheckStruct_Custom(t *testing.T) {
 	})
 }
 
+func TestCheckStruct_Dive(t *testing.T) {
+	r := require.New(t)
+	testSuccess(r, func(v *validate.Validator) {
+		v.Struct(&validate.DemoBase{Id: "id"}, "param").Dive()
+	})
+	testFail(r, func(v *validate.Validator) {
+		v.Struct(&validate.DemoBase{}, "param").Dive()
+	}, "param.id must not be blank")
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*validate.DemoBase)(nil), "param").Dive()
+	}, "param.id must not be blank")
+}
+
 func TestCheckStruct_ShouldStop(t *testing.T) {
 	r := require.New(t)
 	testFail(r, func(v *validate.Validator) {

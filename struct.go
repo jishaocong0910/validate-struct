@@ -23,7 +23,7 @@ type checkStruct[T any, V validatable[T]] struct {
 // Required 限制不能为nil
 func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageRequired, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -32,7 +32,7 @@ func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
 // Custom 自定义校验
 func (c *checkStruct[T, V]) Custom(successIfNil bool, custom func(s T) bool, opts ...RuleOption) *checkStruct[T, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.s == nil, messageDefault, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.s == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(*c.s)
@@ -45,10 +45,8 @@ func (c *checkStruct[T, V]) Dive() {
 	if c.v.shouldStop() {
 		return
 	}
-	if c.s != nil {
-		fi := c.v.fieldInfo
-		c.v.beforeDiveStruct()
-		c.s.Checklist(c.v)
-		c.v.fieldInfo = fi
-	}
+	fi := c.v.fieldInfo
+	s := c.v.beforeDiveStruct(c.s)
+	s.Checklist(c.v)
+	c.v.fieldInfo = fi
 }
