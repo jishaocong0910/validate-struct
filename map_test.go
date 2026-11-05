@@ -211,8 +211,8 @@ func TestCheckMap_Stop(t *testing.T) {
 		}, func(value int) {
 			v.Int(&value, "").Lt(10)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Len(msgs, 4)
+		_, _, messages := validate.GetResult(v)
+		r.Len(messages, 4)
 	}
 	{
 		v := validate.NewValidator()
@@ -221,8 +221,8 @@ func TestCheckMap_Stop(t *testing.T) {
 		}, func(value int) {
 			v.Int(&value, "").Lt(10)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Len(msgs, 1)
+		_, _, messages := validate.GetResult(v)
+		r.Len(messages, 1)
 	}
 	{
 		v := validate.NewValidator()
@@ -231,8 +231,8 @@ func TestCheckMap_Stop(t *testing.T) {
 		}, func(value int) {
 			v.Int(&value, "").Lt(10)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Len(msgs, 1)
+		_, _, messages := validate.GetResult(v)
+		r.Len(messages, 1)
 	}
 	{
 		v := validate.NewValidator()
@@ -242,7 +242,7 @@ func TestCheckMap_Stop(t *testing.T) {
 		}, func(value int) {
 			v.Int(&value, "").Lt(10)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Nil(msgs)
+		_, _, messages := validate.GetResult(v)
+		r.Nil(messages)
 	}
 }

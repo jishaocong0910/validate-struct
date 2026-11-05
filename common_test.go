@@ -29,7 +29,7 @@ func testSuccess(r *require.Assertions, handler func(vc *validate.Validator)) {
 func testFail(r *require.Assertions, handler func(vc *validate.Validator), expectedMsg string) {
 	v := validate.NewValidator()
 	handler(v)
-	code, msg, _ := validate.GetResult(v)
+	code, message, _ := validate.GetResult(v)
 	r.Equal(validate.FAIL, code)
-	r.Equal(expectedMsg, msg)
+	r.Equal(expectedMsg, message)
 }

@@ -19,8 +19,11 @@ func TestCheckEmbed_Required(t *testing.T) {
 		v.Embed(&validate.DemoImage{Url: "url"})
 	}, "id is required")
 	testFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoTag)(nil), "param").Dive()
+		v.Struct((*validate.DemoCategory)(nil), "param").Dive()
 	}, "param.id is required")
+	testFail(r, func(v *validate.Validator) {
+		v.Struct((*validate.DemoProduct)(nil), "param").Dive()
+	}, "param.category.id is required")
 }
 
 func TestCheckEmbed_ShouldStop(t *testing.T) {

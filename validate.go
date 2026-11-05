@@ -37,11 +37,8 @@ func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorO
 	if v == nil {
 		return
 	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
 
-	validator := &Validator{ctx: ctx, fieldInfo: &FieldInfo{}}
+	validator := newValidator(ctx)
 	for _, o := range opts {
 		o(validator)
 	}
@@ -56,7 +53,7 @@ func Check[T any, V validatable[T]](ctx context.Context, v V, opts ...ValidatorO
 		}
 	}
 
-	messages = validator.msgs
+	messages = validator.messages
 	if len(messages) > 0 {
 		message = messages[0]
 	}
@@ -72,9 +69,11 @@ type Validator struct {
 	// 是否已有校验错误，在不校验全部规则时，通过此此值判断是否停止校验
 	hasError bool
 	// 错误消息，一般情况下只可能有一条，使用选项 [All] 时会有多条
-	msgs []string
+	messages []string
 	// 当前校验字段的信息
 	fieldInfo *FieldInfo
+	// 虚拟下沉递归保护
+	virtualDiveTypes map[any]struct{}
 }
 
 func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkBool {
@@ -154,7 +153,7 @@ func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *ch
 
 func (v *Validator) Struct[T any, V validatable[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
 	v.beforeCheckField(fieldName, opts)
-	return &checkStruct[T, V]{v: v, s: s}
+	return &checkStruct[T, V]{v: v, src: s}
 }
 
 func (v *Validator) Slice[T any](s []T, fieldName string, opts ...FieldOption) *checkSlice[T] {
@@ -173,7 +172,7 @@ func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *che
 }
 
 func (v *Validator) Embed[T any, V validatable[T]](e V) {
-	c := &checkEmbed[T, V]{v: v, e: e}
+	c := &checkEmbed[T, V]{v: v, src: e}
 	c.dive()
 }
 
@@ -186,13 +185,13 @@ func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
 		v.fieldInfo = &FieldInfo{
 			fieldName:   v.fieldInfo.fieldName,
 			isElem:      true,
-			parentIsNil: v.fieldInfo.parentIsNil,
+			virtualDive: v.fieldInfo.virtualDive,
 		}
 	} else {
 		v.fieldInfo = &FieldInfo{
 			fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
 			fieldName:       v.fieldInfo.fieldNamePrefix + fieldName,
-			parentIsNil:     v.fieldInfo.parentIsNil,
+			virtualDive:     v.fieldInfo.virtualDive,
 		}
 	}
 	for _, o := range opts {
@@ -208,36 +207,70 @@ func (v *Validator) beforeCheckRule(opts []RuleOption) {
 	}
 }
 
-func (v *Validator) beforeDiveStruct[T any, V validatable[T]](s V) V {
-	v.fieldInfo = &FieldInfo{
-		fieldNamePrefix: v.fieldInfo.fieldName + ".",
-		parentIsNil:     v.fieldInfo.parentIsNil,
+func (v *Validator) beforeDiveStruct[T any, V validatable[T]](src V) (diveSrc V, after func()) {
+	if src == nil {
+		key := any((*T)(nil))
+		if _, ok := v.virtualDiveTypes[key]; !ok {
+			prev := v.fieldInfo
+			v.fieldInfo.virtualDive = true
+			v.fieldInfo = &FieldInfo{
+				fieldNamePrefix: v.fieldInfo.fieldName + ".",
+				virtualDive:     v.fieldInfo.virtualDive,
+			}
+			v.virtualDiveTypes[key] = struct{}{}
+			diveSrc = V(new(T))
+			after = func() {
+				v.fieldInfo = prev
+				delete(v.virtualDiveTypes, key)
+			}
+		}
+	} else {
+		prev := v.fieldInfo
+		v.fieldInfo = &FieldInfo{
+			fieldNamePrefix: v.fieldInfo.fieldName + ".",
+			virtualDive:     v.fieldInfo.virtualDive,
+		}
+		diveSrc = src
+		after = func() {
+			v.fieldInfo = prev
+		}
 	}
-	if s == nil {
-		v.fieldInfo.parentIsNil = true
-		var t T
-		return &t
-	}
-	return s
+	return
 }
 
-func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](e V) V {
-	v.fieldInfo = &FieldInfo{
-		fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
-		parentIsNil:     v.fieldInfo.parentIsNil,
+func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](src V) (diveSrc V, after func()) {
+	if src == nil {
+		key := any((*T)(nil))
+		if _, ok := v.virtualDiveTypes[key]; !ok {
+			v.fieldInfo.virtualDive = true
+			v.fieldInfo = &FieldInfo{
+				fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
+				virtualDive:     v.fieldInfo.virtualDive,
+			}
+			v.virtualDiveTypes[key] = struct{}{}
+			diveSrc = V(new(T))
+			after = func() {
+				delete(v.virtualDiveTypes, key)
+			}
+		}
+	} else {
+		v.fieldInfo = &FieldInfo{
+			fieldNamePrefix: v.fieldInfo.fieldNamePrefix,
+			virtualDive:     v.fieldInfo.virtualDive,
+		}
+		diveSrc = src
 	}
-	if e == nil {
-		v.fieldInfo.parentIsNil = true
-		var t T
-		return &t
-	}
-	return e
+	return
 }
 
-func (v *Validator) beforeDiveSliceMap(elemName string) {
+func (v *Validator) beforeDiveSliceMap(elemName string) (after func()) {
+	prev := v.fieldInfo
 	v.fieldInfo = &FieldInfo{
 		fieldName: v.fieldInfo.fieldName + elemName,
 		isElem:    true,
+	}
+	return func() {
+		v.fieldInfo = prev
 	}
 }
 
@@ -268,15 +301,22 @@ func (v *Validator) fail(messageBuilder messageBuilder, args []string) {
 		v.code = v.fieldInfo.code
 	}
 	v.fieldInfo.args = args
-	var msg string
+	var message string
 	if v.fieldInfo.messageBuilder == nil {
 		if messageBuilder != nil {
-			msg = messageBuilder(v.fieldInfo)
+			message = messageBuilder(v.fieldInfo)
 		}
 	} else {
-		msg = v.fieldInfo.messageBuilder(v.fieldInfo)
+		message = v.fieldInfo.messageBuilder(v.fieldInfo)
 	}
-	v.msgs = append(v.msgs, msg)
+	v.messages = append(v.messages, message)
+}
+
+func newValidator(ctx context.Context) *Validator {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return &Validator{ctx: context.Background(), fieldInfo: &FieldInfo{}, virtualDiveTypes: make(map[any]struct{})}
 }
 
 // FieldInfo 字段信息
@@ -287,8 +327,8 @@ type FieldInfo struct {
 	isElem bool
 	// nil时忽略校验
 	omitNil bool
-	// 父级结构体为nil
-	parentIsNil bool
+	// 虚拟下沉（结构体字段、内嵌结构体为临时创建的零值）
+	virtualDive bool
 	// 字段名
 	fieldName string
 	// 限制值的字符串形式，校验每个规则方法时会修改此字段

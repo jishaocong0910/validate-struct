@@ -23,7 +23,7 @@ type checkMap[K comparable, V any] struct {
 // Required 限制不能为nil
 func (c *checkMap[K, V]) Required(opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageRequired, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -32,7 +32,7 @@ func (c *checkMap[K, V]) Required(opts ...RuleOption) *checkMap[K, V] {
 // NotEmpty 限制不能为空
 func (c *checkMap[K, V]) NotEmpty(opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageNotEmpty, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageNotEmpty, nil, func() bool {
 		return false
 	}, func() bool {
 		return len(c.m) > 0
@@ -43,7 +43,7 @@ func (c *checkMap[K, V]) NotEmpty(opts ...RuleOption) *checkMap[K, V] {
 // Length 限制长度必须为指定值
 func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLength, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLength, func() []string {
 		return formatInt(l)
 	}, func() bool {
 		return l == 0
@@ -56,7 +56,7 @@ func (c *checkMap[K, V]) Length(l int, opts ...RuleOption) *checkMap[K, V] {
 // Min 限制最小长度
 func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthMin, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthMin, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min <= 0
@@ -69,7 +69,7 @@ func (c *checkMap[K, V]) Min(min int, opts ...RuleOption) *checkMap[K, V] {
 // Max 限制最大长度
 func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthMax, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthMax, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max >= 0
@@ -82,7 +82,7 @@ func (c *checkMap[K, V]) Max(max int, opts ...RuleOption) *checkMap[K, V] {
 // BetweenInclusive 限制长度范围（包含边界）
 func (c *checkMap[K, V]) BetweenInclusive(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthBetweenInclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthBetweenInclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min <= 0 && max >= 0
@@ -96,7 +96,7 @@ func (c *checkMap[K, V]) BetweenInclusive(min, max int, opts ...RuleOption) *che
 // Gt 限制长度必须大于指定值
 func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthGt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthGt, func() []string {
 		return formatInt(min)
 	}, func() bool {
 		return min < 0
@@ -109,7 +109,7 @@ func (c *checkMap[K, V]) Gt(min int, opts ...RuleOption) *checkMap[K, V] {
 // Lt 限制长度必须小于指定值
 func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthLt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthLt, func() []string {
 		return formatInt(max)
 	}, func() bool {
 		return max > 0
@@ -122,7 +122,7 @@ func (c *checkMap[K, V]) Lt(max int, opts ...RuleOption) *checkMap[K, V] {
 // BetweenExclusive 限制长度范围（不包含边界）
 func (c *checkMap[K, V]) BetweenExclusive(min, max int, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageLengthBetweenExclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageLengthBetweenExclusive, func() []string {
 		return formatInt(min, max)
 	}, func() bool {
 		return min < 0 && max > 0
@@ -136,7 +136,7 @@ func (c *checkMap[K, V]) BetweenExclusive(min, max int, opts ...RuleOption) *che
 // Custom 自定义校验
 func (c *checkMap[K, V]) Custom(successIfNil bool, custom func(m map[K]V) bool, opts ...RuleOption) *checkMap[K, V] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.m == nil, messageDefault, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.m == nil, messageDefault, nil, func() bool {
 		return successIfNil
 	}, func() bool {
 		return custom(c.m)
@@ -155,19 +155,17 @@ func (c *checkMap[K, V]) Dive(checkKey func(key K), checkValue func(value V)) {
 				if c.v.shouldStop() {
 					break
 				}
-				fi := c.v.fieldInfo
-				c.v.beforeDiveSliceMap("$key")
+				after := c.v.beforeDiveSliceMap("$key")
 				checkKey(k)
-				c.v.fieldInfo = fi
+				after()
 			}
 			if checkValue != nil {
 				if c.v.shouldStop() {
 					break
 				}
-				fi := c.v.fieldInfo
-				c.v.beforeDiveSliceMap("$value")
+				after := c.v.beforeDiveSliceMap("$value")
 				checkValue(v)
-				c.v.fieldInfo = fi
+				after()
 			}
 		}
 	}

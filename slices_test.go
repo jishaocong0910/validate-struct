@@ -203,19 +203,19 @@ func TestCheckSlice_Stop(t *testing.T) {
 		v.Slice([]int{8, 3}, "param").Dive(func(t int) {
 			v.Int(&t, "").Lt(7).Gt(4)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Len(msgs, 2)
-		r.Equal("param[0] must be less than 7", msgs[0])
-		r.Equal("param[1] must be greater than 4", msgs[1])
+		_, _, messages := validate.GetResult(v)
+		r.Len(messages, 2)
+		r.Equal("param[0] must be less than 7", messages[0])
+		r.Equal("param[1] must be greater than 4", messages[1])
 	}
 	{
 		v := validate.NewValidator()
 		v.Slice([]int{8, 3}, "param").Dive(func(t int) {
 			v.Int(&t, "").Lt(7).Gt(4)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Len(msgs, 1)
-		r.Equal("param[0] must be less than 7", msgs[0])
+		_, _, messages := validate.GetResult(v)
+		r.Len(messages, 1)
+		r.Equal("param[0] must be less than 7", messages[0])
 	}
 	{
 		v := validate.NewValidator()
@@ -223,7 +223,7 @@ func TestCheckSlice_Stop(t *testing.T) {
 		v.Slice([]int{8, 3}, "param").Dive(func(t int) {
 			v.Int(&t, "").Lt(7).Gt(4)
 		})
-		_, _, msgs := validate.GetResult(v)
-		r.Nil(msgs)
+		_, _, messages := validate.GetResult(v)
+		r.Nil(messages)
 	}
 }

@@ -32,7 +32,7 @@ type checkNumber[T number] struct {
 
 func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageRequired, nil, func() bool {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageRequired, nil, func() bool {
 		return false
 	}, nil)
 	return c
@@ -40,7 +40,7 @@ func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageMin, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageMin, func() []string {
 		return c.formatter(min)
 	}, func() bool {
 		return false
@@ -52,7 +52,7 @@ func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageMax, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageMax, func() []string {
 		return c.formatter(max)
 	}, func() bool {
 		return true
@@ -64,7 +64,7 @@ func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) BetweenInclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageBetweenInclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageBetweenInclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false
@@ -76,7 +76,7 @@ func (c *checkNumber[T]) BetweenInclusive(min, max T, opts ...RuleOption) *check
 
 func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageGt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageGt, func() []string {
 		return c.formatter(min)
 	}, func() bool {
 		return false
@@ -88,7 +88,7 @@ func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageLt, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageLt, func() []string {
 		return c.formatter(max)
 	}, func() bool {
 		return true
@@ -100,7 +100,7 @@ func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) BetweenExclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageBetweenExclusive, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageBetweenExclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
 		return false
@@ -112,7 +112,7 @@ func (c *checkNumber[T]) BetweenExclusive(min, max T, opts ...RuleOption) *check
 
 func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageEnum, func() []string {
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageEnum, func() []string {
 		return c.formatter(enums...)
 	}, func() bool {
 		return false
@@ -124,7 +124,7 @@ func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
 
 func (c *checkNumber[T]) Custom(successIfNil bool, custom func(n T) bool, opts ...RuleOption) *checkNumber[T] {
 	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.parentIsNil || c.n == nil, messageDefault, nil,
+	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageDefault, nil,
 		func() bool {
 			return successIfNil
 		}, func() bool {

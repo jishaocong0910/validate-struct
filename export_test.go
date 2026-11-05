@@ -14,13 +14,11 @@
 
 package validate
 
-import "context"
-
 func NewValidator() *Validator {
-	return &Validator{ctx: context.Background(), fieldInfo: &FieldInfo{}}
+	return newValidator(nil)
 }
 
-func GetResult(v *Validator) (code string, msg string, msgs []string) {
+func GetResult(v *Validator) (code string, message string, messages []string) {
 	if !v.hasError {
 		code = SUCCESS
 	} else if v.code == "" {
@@ -28,9 +26,9 @@ func GetResult(v *Validator) (code string, msg string, msgs []string) {
 	} else {
 		code = v.code
 	}
-	msgs = v.msgs
-	if len(msgs) > 0 {
-		msg = msgs[0]
+	messages = v.messages
+	if len(messages) > 0 {
+		message = messages[0]
 	}
 	return
 }
@@ -182,10 +180,18 @@ func (d *DemoAddress) Checklist(v *Validator) {
 	v.String(&d.City, "city").Required().NotBlank()
 }
 
-type DemoTag struct {
+type DemoCategory struct {
 	DemoBase
 }
 
-func (d *DemoTag) Checklist(v *Validator) {
+func (d *DemoCategory) Checklist(v *Validator) {
 	v.Embed(&d.DemoBase)
+}
+
+type DemoProduct struct {
+	Category DemoCategory
+}
+
+func (d DemoProduct) Checklist(v *Validator) {
+	v.Struct(&d.Category, "category").Dive()
 }

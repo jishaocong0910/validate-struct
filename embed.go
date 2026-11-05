@@ -15,14 +15,19 @@
 package validate
 
 type checkEmbed[T any, V validatable[T]] struct {
-	v *Validator
-	e V
+	v   *Validator
+	src V
 }
 
 func (c *checkEmbed[T, V]) dive() {
 	if c.v.shouldStop() {
 		return
 	}
-	e := c.v.beforeDiveEmbed(c.e)
-	e.Checklist(c.v)
+	diveSrc, after := c.v.beforeDiveEmbed(c.src)
+	if diveSrc != nil {
+		diveSrc.Checklist(c.v)
+		if after != nil {
+			after()
+		}
+	}
 }
