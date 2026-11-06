@@ -34,23 +34,18 @@ func TestCheckBool_Required(t *testing.T) {
 func TestCheckBool_Custom(t *testing.T) {
 	r := require.New(t)
 	checklistFail(r, func(v *validate.Validator) {
-		v.Bool(new(true), "param").Custom(true, func(t bool) bool {
+		v.Bool(new(true), "param").Custom(func(t bool) bool {
 			return false
 		})
 	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Bool(new(true), "param").Custom(false, func(t bool) bool {
+		v.Bool(new(true), "param").Custom(func(t bool) bool {
 			return true
 		})
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Bool(nil, "param").Custom(false, func(t bool) bool {
-			return true
-		})
-	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Bool(nil, "param").Custom(true, func(t bool) bool {
-			return true
+		v.Bool(nil, "param").Custom(func(t bool) bool {
+			return false
 		})
 	})
 }

@@ -20,22 +20,22 @@ type checkAny[T any] struct {
 	a *T
 }
 
+func (c *checkAny[T]) isNil() bool {
+	return c.a == nil || c.v.fieldInfo.virtualDive
+}
+
 // Required 必填
 func (c *checkAny[T]) Required(opts ...RuleOption) *checkAny[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.a == nil, messageRequired, nil, func() bool {
-		return false
-	}, nil)
+	c.v.checkRule(opts, messageRequired, nil, func() bool {
+		return !c.isNil()
+	})
 	return c
 }
 
 // Custom 自定义校验
-func (c *checkAny[T]) Custom(successIfNil bool, custom func(a T) bool, opts ...RuleOption) *checkAny[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.a == nil, messageDefault, nil, func() bool {
-		return successIfNil
-	}, func() bool {
-		return custom(*c.a)
+func (c *checkAny[T]) Custom(custom func(a T) bool, opts ...RuleOption) *checkAny[T] {
+	c.v.checkRule(opts, messageDefault, nil, func() bool {
+		return c.isNil() || custom == nil || custom(*c.a)
 	})
 	return c
 }

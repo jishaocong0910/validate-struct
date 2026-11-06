@@ -38,20 +38,15 @@ func SetHasError(v *Validator) {
 }
 
 func SetAll(v *Validator) {
-	v.allRule = true
+	v.allRules = true
 }
 
 func SetFieldName(v *Validator, fieldName string) {
 	v.fieldInfo.fieldName = fieldName
 }
 
-func SetOmitNil(v *Validator) {
-	OmitNil()(v.fieldInfo)
-}
-
-func CheckRule(v *Validator, isNil bool, opts []RuleOption, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
-	v.beforeCheckRule(opts)
-	v.checkRule(isNil, messageDefault, formatArgs, checkNil, checkNonNil)
+func CheckRule(v *Validator, opts []RuleOption, formatArgs func() []string, rule func() bool) {
+	v.checkRule(opts, messageDefault, formatArgs, rule)
 }
 
 type Number = number
@@ -180,6 +175,18 @@ type DemoNode2 struct {
 }
 
 func (d *DemoNode2) Checklist(v *Validator) {
-	v.String(&d.Name, "name").NotBlank()
+	v.String(&d.Name, "name").Required()
 	v.Embed(d.DemoNode2)
+}
+
+type DemoCtx struct {
+}
+
+func (d DemoCtx) Checklist(v *Validator) {
+	value, _ := v.Ctx().Value("foo").(string)
+	v.Int(new(1), "ctx value").Custom(func(n int) bool {
+		return false
+	}, Message(func(f *FieldInfo) string {
+		return "ctx value: " + value
+	}))
 }

@@ -15,6 +15,7 @@
 package validate_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -26,9 +27,7 @@ func TestCheckRule(t *testing.T) {
 	r := require.New(t)
 	{
 		v := validate.NewValidator()
-		validate.CheckRule(v, false, nil, nil, func() bool {
-			return false
-		}, func() bool {
+		validate.CheckRule(v, nil, nil, func() bool {
 			return true
 		})
 		code, _, _ := validate.GetResult(v)
@@ -37,63 +36,16 @@ func TestCheckRule(t *testing.T) {
 	{
 		v := validate.NewValidator()
 		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, false, []validate.RuleOption{validate.Code("MY_CODE"), validate.Message(func(b *validate.FieldInfo) string {
+		validate.CheckRule(v, []validate.RuleOption{validate.Code("MY_CODE"), validate.Message(func(b *validate.FieldInfo) string {
 			return fmt.Sprintf("%s %s", b.FieldName(), b.Args())
 		})}, func() []string {
 			return []string{"a", "b", "c"}
-		}, func() bool {
-			return true
 		}, func() bool {
 			return false
 		})
 		code, message, _ := validate.GetResult(v)
 		r.Equal("MY_CODE", code)
 		r.Equal("param a, b, or c", message)
-	}
-	{
-		v := validate.NewValidator()
-		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, false, nil, nil, func() bool {
-			return true
-		}, func() bool {
-			return false
-		})
-		code, message, _ := validate.GetResult(v)
-		r.Equal(validate.FAIL, code)
-		r.Equal("param is invalid", message)
-	}
-	{
-		v := validate.NewValidator()
-		validate.SetFieldName(v, "param")
-		validate.CheckRule(v, true, nil, nil, func() bool {
-			return false
-		}, func() bool {
-			return true
-		})
-		code, _, _ := validate.GetResult(v)
-		r.Equal(validate.FAIL, code)
-	}
-	{
-		v := validate.NewValidator()
-		validate.SetOmitNil(v)
-		validate.CheckRule(v, true, nil, nil, func() bool {
-			return false
-		}, func() bool {
-			return false
-		})
-		code, _, _ := validate.GetResult(v)
-		r.Equal(validate.SUCCESS, code)
-	}
-	{
-		v := validate.NewValidator()
-		validate.SetHasError(v)
-		validate.CheckRule(v, true, []validate.RuleOption{validate.Code("MY_CODE")}, nil, func() bool {
-			return false
-		}, func() bool {
-			return false
-		})
-		code, _, _ := validate.GetResult(v)
-		r.Equal(validate.FAIL, code)
 	}
 }
 
@@ -128,6 +80,12 @@ func TestCheck(t *testing.T) {
 		r.Nil(messages)
 	}
 	{
+		ctx := context.WithValue(context.Background(), "foo", "bar")
+		code, message, _ := validate.Check(ctx, &validate.DemoCtx{})
+		r.Equal(validate.FAIL, code)
+		r.Equal("ctx value: bar", message)
+	}
+	{
 		u := validate.DemoUser{
 			Attach: &validate.DemoAttach{
 				Images:   []validate.DemoImage{{}, {}},
@@ -135,21 +93,19 @@ func TestCheck(t *testing.T) {
 				Profiles: map[string]validate.DemoProfile{"123456": {}},
 			},
 		}
-		code, _, messages := validate.Check(nil, &u, validate.AllRule())
+		code, _, messages := validate.Check(nil, &u, validate.AllRules())
 		r.Equal(validate.FAIL, code)
-		r.Len(messages, 12)
+		r.Len(messages, 10)
 		r.Equal("id must not be blank", messages[0])
 		r.Equal("name must not be blank", messages[1])
 		r.Equal("attach.id must not be blank", messages[2])
 		r.Equal("attach.images[0].url must not be blank", messages[3])
 		r.Equal("attach.images[0].id is required", messages[4])
-		r.Equal("attach.images[0].id must not be blank", messages[5])
-		r.Equal("attach.images[1].url must not be blank", messages[6])
-		r.Equal("attach.images[1].id is required", messages[7])
-		r.Equal("attach.images[1].id must not be blank", messages[8])
-		r.Equal("attach.score$value must be at most 100", messages[9])
-		r.Equal("attach.profiles$key must have a length of at most 4", messages[10])
-		r.Equal("attach.profiles$value.name must not be blank", messages[11])
+		r.Equal("attach.images[1].url must not be blank", messages[5])
+		r.Equal("attach.images[1].id is required", messages[6])
+		r.Equal("attach.score$value must be at most 100", messages[7])
+		r.Equal("attach.profiles$key must have a length of at most 4", messages[8])
+		r.Equal("attach.profiles$value.name must not be blank", messages[9])
 	}
 }
 
@@ -158,13 +114,13 @@ func TestCheck_DiveCycle(t *testing.T) {
 	node := &validate.DemoNode{}
 	node.Next = node
 
-	code, _, messages := validate.Check(nil, node, validate.AllRule())
+	code, _, messages := validate.Check(nil, node, validate.AllRules())
 	r.Equal(validate.FAIL, code)
 	r.Equal([]string{"name must not be blank"}, messages)
 }
 
 func TestCheck_VirtualDiveCycle(t *testing.T) {
-	code, _, messages := validate.Check(nil, (*validate.DemoNode2)(nil), validate.AllRule())
+	code, _, messages := validate.Check(nil, (*validate.DemoNode2)(nil), validate.AllRules())
 	require.Equal(t, validate.FAIL, code)
-	require.Equal(t, []string{"name must not be blank"}, messages)
+	require.Equal(t, []string{"name is required"}, messages)
 }

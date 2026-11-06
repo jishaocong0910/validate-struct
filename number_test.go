@@ -39,9 +39,9 @@ func TestCheckNumber_Min(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Min(5)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").Min(0)
-	}, "param must be at least 0")
+	})
 }
 
 func TestCheckNumber_Max(t *testing.T) {
@@ -68,9 +68,9 @@ func TestCheckNumber_BetweenInclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").BetweenInclusive(1, 9)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").BetweenInclusive(0, 9)
-	}, "param must be between 0 and 9, inclusive")
+	})
 }
 
 func TestCheckNumber_Gt(t *testing.T) {
@@ -81,9 +81,9 @@ func TestCheckNumber_Gt(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Gt(4)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").Gt(0)
-	}, "param must be greater than 0")
+	})
 }
 
 func TestCheckNumber_Lt(t *testing.T) {
@@ -110,16 +110,13 @@ func TestCheckNumber_BetweenExclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").BetweenExclusive(1, 9)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int((*int)(nil), "param").BetweenExclusive(-5, 5)
-	}, "param must be between -5 and 5, exclusive")
+	})
 }
 
 func TestCheckNumber_Enum(t *testing.T) {
 	r := require.New(t)
-	checklistFail(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Enum([]int{1, 2, 3})
-	}, "param must be 1, 2, or 3")
 	checklistFail(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{1})
 	}, "param must be 1")
@@ -132,27 +129,25 @@ func TestCheckNumber_Enum(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Int(new(5), "param").Enum([]int{3, 4, 5})
 	})
+	checklistSuccess(r, func(v *validate.Validator) {
+		v.Int((*int)(nil), "param").Enum([]int{1, 2, 3})
+	})
 }
 
 func TestCheckNumber_Custom(t *testing.T) {
 	r := require.New(t)
 	checklistFail(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Custom(true, func(t int) bool {
+		v.Int(new(5), "param").Custom(func(t int) bool {
 			return false
 		})
 	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Int(new(5), "param").Custom(false, func(t int) bool {
+		v.Int(new(5), "param").Custom(func(t int) bool {
 			return true
 		})
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Custom(false, func(t int) bool {
-			return true
-		})
-	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Int((*int)(nil), "param").Custom(true, func(t int) bool {
+		v.Int((*int)(nil), "param").Custom(func(t int) bool {
 			return false
 		})
 	})

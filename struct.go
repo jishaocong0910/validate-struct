@@ -20,22 +20,22 @@ type checkStruct[T any, V validatable[T]] struct {
 	s V
 }
 
+func (c *checkStruct[T, V]) isNil() bool {
+	return c.s == nil || c.v.fieldInfo.virtualDive
+}
+
 // Required 限制不能为nil
 func (c *checkStruct[T, V]) Required(opts ...RuleOption) *checkStruct[T, V] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.s == nil, messageRequired, nil, func() bool {
-		return false
-	}, nil)
+	c.v.checkRule(opts, messageRequired, nil, func() bool {
+		return !c.isNil()
+	})
 	return c
 }
 
 // Custom 自定义校验
-func (c *checkStruct[T, V]) Custom(successIfNil bool, custom func(s T) bool, opts ...RuleOption) *checkStruct[T, V] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.s == nil, messageDefault, nil, func() bool {
-		return successIfNil
-	}, func() bool {
-		return custom(*c.s)
+func (c *checkStruct[T, V]) Custom(custom func(s T) bool, opts ...RuleOption) *checkStruct[T, V] {
+	c.v.checkRule(opts, messageDefault, nil, func() bool {
+		return c.isNil() || custom == nil || custom(*c.s)
 	})
 	return c
 }

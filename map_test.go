@@ -39,9 +39,9 @@ func TestCheckMap_NotEmpty(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1}, "param").NotEmpty()
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map((map[string]int)(nil), "param").NotEmpty()
-	}, "param must not be empty")
+	})
 }
 
 func TestCheckMap_Length(t *testing.T) {
@@ -55,11 +55,8 @@ func TestCheckMap_Length(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2}, "param").Length(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Length(2)
-	}, "param must have a length of 2")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Length(0)
+		v.Map(map[string]int(nil), "param").Length(2)
 	})
 }
 
@@ -71,11 +68,8 @@ func TestCheckMap_Min(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2}, "param").Min(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Min(1)
-	}, "param must have a length of at least 1")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Min(0)
+		v.Map(map[string]int(nil), "param").Min(1)
 	})
 }
 
@@ -87,11 +81,8 @@ func TestCheckMap_Max(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2}, "param").Max(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Max(-1)
-	}, "param must have a length of at most -1")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Max(0)
+		v.Map(map[string]int(nil), "param").Max(-1)
 	})
 }
 
@@ -106,17 +97,8 @@ func TestCheckMap_BetweenInclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2, "c": 3}, "param").BetweenInclusive(2, 3)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int(nil), "param").BetweenInclusive(1, 3)
-	}, "param must have a length between 1 and 3, inclusive")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenInclusive(-3, -1)
-	}, "param must have a length between -3 and -1, inclusive")
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenInclusive(0, 3)
-	})
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenInclusive(-1, 0)
 	})
 }
 
@@ -128,11 +110,8 @@ func TestCheckMap_Gt(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2, "c": 3}, "param").Gt(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Gt(0)
-	}, "param must have a length greater than 0")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Gt(-1)
+		v.Map(map[string]int(nil), "param").Gt(0)
 	})
 }
 
@@ -144,11 +123,8 @@ func TestCheckMap_Lt(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1}, "param").Lt(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Lt(0)
-	}, "param must have a length less than 0")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Lt(1)
+		v.Map(map[string]int(nil), "param").Lt(0)
 	})
 }
 
@@ -163,39 +139,25 @@ func TestCheckMap_BetweenExclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int{"a": 1, "b": 2, "c": 3}, "param").BetweenExclusive(2, 5)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.Map(map[string]int(nil), "param").BetweenExclusive(0, 5)
-	}, "param must have a length between 0 and 5, exclusive")
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenExclusive(-5, 0)
-	}, "param must have a length between -5 and 0, exclusive")
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenExclusive(-1, 5)
-	})
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").BetweenExclusive(-5, 1)
 	})
 }
 
 func TestCheckMap_Custom(t *testing.T) {
 	r := require.New(t)
 	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int{}, "param").Custom(true, func(t map[string]int) bool {
+		v.Map(map[string]int{}, "param").Custom(func(t map[string]int) bool {
 			return false
 		})
 	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int{}, "param").Custom(false, func(t map[string]int) bool {
+		v.Map(map[string]int{}, "param").Custom(func(t map[string]int) bool {
 			return true
 		})
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Custom(false, func(t map[string]int) bool {
-			return true
-		})
-	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Map(map[string]int(nil), "param").Custom(true, func(t map[string]int) bool {
+		v.Map(map[string]int(nil), "param").Custom(func(t map[string]int) bool {
 			return true
 		})
 	})

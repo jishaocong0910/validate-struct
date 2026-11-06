@@ -30,106 +30,84 @@ type checkNumber[T number] struct {
 	formatter numberFormatter[T]
 }
 
+func (c *checkNumber[T]) isNil() bool {
+	return c.n == nil || c.v.fieldInfo.virtualDive
+}
+
 func (c *checkNumber[T]) Required(opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageRequired, nil, func() bool {
-		return false
-	}, nil)
+	c.v.checkRule(opts, messageRequired, nil, func() bool {
+		return !c.isNil()
+	})
 	return c
 }
 
 func (c *checkNumber[T]) Min(min T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageMin, func() []string {
+	c.v.checkRule(opts, messageMin, func() []string {
 		return c.formatter(min)
 	}, func() bool {
-		return false
-	}, func() bool {
-		return *c.n >= min
+		return c.isNil() || *c.n >= min
 	})
 	return c
 }
 
 func (c *checkNumber[T]) Max(max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageMax, func() []string {
+	c.v.checkRule(opts, messageMax, func() []string {
 		return c.formatter(max)
 	}, func() bool {
-		return true
-	}, func() bool {
-		return *c.n <= max
+		return c.isNil() || *c.n <= max
 	})
 	return c
 }
 
 func (c *checkNumber[T]) BetweenInclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageBetweenInclusive, func() []string {
+	c.v.checkRule(opts, messageBetweenInclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
-		return false
-	}, func() bool {
-		return *c.n >= min && *c.n <= max
+		return c.isNil() || *c.n >= min && *c.n <= max
 	})
 	return c
 }
 
 func (c *checkNumber[T]) Gt(min T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageGt, func() []string {
+	c.v.checkRule(opts, messageGt, func() []string {
 		return c.formatter(min)
 	}, func() bool {
-		return false
-	}, func() bool {
-		return *c.n > min
+		return c.isNil() || *c.n > min
 	})
 	return c
 }
 
 func (c *checkNumber[T]) Lt(max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageLt, func() []string {
+	c.v.checkRule(opts, messageLt, func() []string {
 		return c.formatter(max)
 	}, func() bool {
-		return true
-	}, func() bool {
-		return *c.n < max
+		return c.isNil() || *c.n < max
 	})
 	return c
 }
 
 func (c *checkNumber[T]) BetweenExclusive(min, max T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageBetweenExclusive, func() []string {
+	c.v.checkRule(opts, messageBetweenExclusive, func() []string {
 		return c.formatter(min, max)
 	}, func() bool {
-		return false
-	}, func() bool {
-		return *c.n > min && *c.n < max
+		return c.isNil() || *c.n > min && *c.n < max
 	})
 	return c
 }
 
 func (c *checkNumber[T]) Enum(enums []T, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageEnum, func() []string {
+	c.v.checkRule(opts, messageEnum, func() []string {
 		return c.formatter(enums...)
 	}, func() bool {
-		return false
-	}, func() bool {
-		return slices.Contains(enums, *c.n)
+		return c.isNil() || slices.Contains(enums, *c.n)
 	})
 	return c
 }
 
-func (c *checkNumber[T]) Custom(successIfNil bool, custom func(n T) bool, opts ...RuleOption) *checkNumber[T] {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.n == nil, messageDefault, nil,
-		func() bool {
-			return successIfNil
-		}, func() bool {
-			return custom(*c.n)
-		})
+func (c *checkNumber[T]) Custom(custom func(n T) bool, opts ...RuleOption) *checkNumber[T] {
+	c.v.checkRule(opts, messageDefault, nil, func() bool {
+		return c.isNil() || custom == nil || custom(*c.n)
+	})
 	return c
 }
 

@@ -40,9 +40,9 @@ func TestCheckString_NotBlank(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("a"), "param").NotBlank()
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.String((*string)(nil), "param").NotBlank()
-	}, "param must not be blank")
+	})
 }
 
 func TestCheckString_Regex(t *testing.T) {
@@ -53,33 +53,25 @@ func TestCheckString_Regex(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("123"), "param").Regex(regexp.MustCompile(`\d+`))
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Regex(regexp.MustCompile(`\d+`))
-	}, "param has an invalid format")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Regex(regexp.MustCompile(`\d*`))
+		v.String((*string)(nil), "param").Regex(regexp.MustCompile(`\d+`))
 	})
 }
 
 func TestCheckString_Custom(t *testing.T) {
 	r := require.New(t)
 	checklistFail(r, func(v *validate.Validator) {
-		v.String(new("a"), "param").Custom(true, func(t string) bool {
+		v.String(new("a"), "param").Custom(func(t string) bool {
 			return false
 		})
 	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String(new("a"), "param").Custom(false, func(t string) bool {
+		v.String(new("a"), "param").Custom(func(t string) bool {
 			return true
 		})
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Custom(false, func(t string) bool {
-			return true
-		})
-	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Custom(true, func(t string) bool {
+		v.String((*string)(nil), "param").Custom(func(t string) bool {
 			return false
 		})
 	})
@@ -96,11 +88,8 @@ func TestCheckString_Length(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文"), "param").Length(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Length(1)
-	}, "param must have a length of 1")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Length(0)
+		v.String((*string)(nil), "param").Length(1)
 	})
 }
 
@@ -112,11 +101,8 @@ func TestCheckString_Min(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文"), "param").Min(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Min(1)
-	}, "param must have a length of at least 1")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Min(0)
+		v.String((*string)(nil), "param").Min(1)
 	})
 }
 
@@ -128,11 +114,8 @@ func TestCheckString_Max(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文"), "param").Max(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Max(-1)
-	}, "param must have a length of at most -1")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Max(0)
+		v.String((*string)(nil), "param").Max(-1)
 	})
 }
 
@@ -147,17 +130,8 @@ func TestCheckString_BetweenInclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文中"), "param").BetweenInclusive(2, 3)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.String((*string)(nil), "param").BetweenInclusive(1, 3)
-	}, "param must have a length between 1 and 3, inclusive")
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenInclusive(-3, -1)
-	}, "param must have a length between -3 and -1, inclusive")
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenInclusive(0, 3)
-	})
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenInclusive(-3, 0)
 	})
 }
 
@@ -169,11 +143,8 @@ func TestCheckString_Gt(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文中"), "param").Gt(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Gt(0)
-	}, "param must have a length greater than 0")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Gt(-1)
+		v.String((*string)(nil), "param").Gt(0)
 	})
 }
 
@@ -185,11 +156,8 @@ func TestCheckString_Lt(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中"), "param").Lt(2)
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Lt(0)
-	}, "param must have a length less than 0")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").Lt(1)
+		v.String((*string)(nil), "param").Lt(0)
 	})
 }
 
@@ -204,17 +172,8 @@ func TestCheckString_BetweenExclusive(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("中文中"), "param").BetweenExclusive(2, 5)
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.String((*string)(nil), "param").BetweenExclusive(0, 5)
-	}, "param must have a length between 0 and 5, exclusive")
-	checklistFail(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenExclusive(-5, 0)
-	}, "param must have a length between -5 and 0, exclusive")
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenExclusive(-1, 5)
-	})
-	checklistSuccess(r, func(v *validate.Validator) {
-		v.String((*string)(nil), "param").BetweenExclusive(-5, 1)
 	})
 }
 
@@ -226,7 +185,7 @@ func TestCheckString_Enum(t *testing.T) {
 	checklistSuccess(r, func(v *validate.Validator) {
 		v.String(new("c"), "param").Enum([]string{"a", "b", "c"})
 	})
-	checklistFail(r, func(v *validate.Validator) {
+	checklistSuccess(r, func(v *validate.Validator) {
 		v.String((*string)(nil), "param").Enum([]string{"a", "b", "c"})
-	}, `param must be "a", "b", or "c"`)
+	})
 }

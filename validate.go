@@ -60,114 +60,114 @@ type Validator struct {
 	ctx context.Context
 	// 错误码，一般情况只有“SUCCESS”和"FALSE"，使用自定义错误码选项 [Code] 时会有其他值。
 	code string
-	// 是否校验所有规则，使用选项 [AllRule] 时为true
-	allRule bool
+	// 是否校验所有规则，使用选项 [AllRules] 时为true
+	allRules bool
 	// 是否已有校验错误，在不校验全部规则时，通过此此值判断是否停止校验
 	hasError bool
-	// 错误消息，一般情况下只可能有一条，使用选项 [AllRule] 时会有多条
+	// 错误消息，一般情况下只可能有一条，使用选项 [AllRules] 时会有多条
 	messages []string
 	// 当前校验字段的信息
 	fieldInfo *FieldInfo
 	// 用于递归保护
-	diveTypes map[any]struct{}
+	activeDiveKeys map[any]struct{}
 }
 
 func (v *Validator) Ctx() context.Context {
 	return v.ctx
 }
 
-func (v *Validator) Bool(b *bool, fieldName string, opts ...FieldOption) *checkBool {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Bool(b *bool, fieldName string) *checkBool {
+	v.beforeCheckField(fieldName)
 	return &checkBool{v: v, b: b}
 }
 
-func (v *Validator) Byte(b *byte, fieldName string, opts ...FieldOption) *checkNumber[byte] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Byte(b *byte, fieldName string) *checkNumber[byte] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[byte]{v: v, n: b, formatter: formatUint8}
 }
 
-func (v *Validator) Int(i *int, fieldName string, opts ...FieldOption) *checkNumber[int] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Int(i *int, fieldName string) *checkNumber[int] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[int]{v: v, n: i, formatter: formatInt}
 }
 
-func (v *Validator) Int8(i *int8, fieldName string, opts ...FieldOption) *checkNumber[int8] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Int8(i *int8, fieldName string) *checkNumber[int8] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[int8]{v: v, n: i, formatter: formatInt8}
 }
 
-func (v *Validator) Int16(i *int16, fieldName string, opts ...FieldOption) *checkNumber[int16] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Int16(i *int16, fieldName string) *checkNumber[int16] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[int16]{v: v, n: i, formatter: formatInt16}
 }
 
-func (v *Validator) Int32(i *int32, fieldName string, opts ...FieldOption) *checkNumber[int32] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Int32(i *int32, fieldName string) *checkNumber[int32] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[int32]{v: v, n: i, formatter: formatInt32}
 }
 
-func (v *Validator) Int64(i *int64, fieldName string, opts ...FieldOption) *checkNumber[int64] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Int64(i *int64, fieldName string) *checkNumber[int64] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[int64]{v: v, n: i, formatter: formatInt64}
 }
 
-func (v *Validator) Uint(u *uint, fieldName string, opts ...FieldOption) *checkNumber[uint] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Uint(u *uint, fieldName string) *checkNumber[uint] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[uint]{v: v, n: u, formatter: formatUint}
 }
 
-func (v *Validator) Uint8(u *uint8, fieldName string, opts ...FieldOption) *checkNumber[uint8] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Uint8(u *uint8, fieldName string) *checkNumber[uint8] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[uint8]{v: v, n: u, formatter: formatUint8}
 }
 
-func (v *Validator) Uint16(u *uint16, fieldName string, opts ...FieldOption) *checkNumber[uint16] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Uint16(u *uint16, fieldName string) *checkNumber[uint16] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[uint16]{v: v, n: u, formatter: formatUint16}
 }
 
-func (v *Validator) Uint32(u *uint32, fieldName string, opts ...FieldOption) *checkNumber[uint32] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Uint32(u *uint32, fieldName string) *checkNumber[uint32] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[uint32]{v: v, n: u, formatter: formatUint32}
 }
 
-func (v *Validator) Uint64(u *uint64, fieldName string, opts ...FieldOption) *checkNumber[uint64] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Uint64(u *uint64, fieldName string) *checkNumber[uint64] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[uint64]{v: v, n: u, formatter: formatUint64}
 }
 
-func (v *Validator) Float32(f *float32, fieldName string, opts ...FieldOption) *checkNumber[float32] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Float32(f *float32, fieldName string) *checkNumber[float32] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[float32]{v: v, n: f, formatter: formatFloat32}
 }
 
-func (v *Validator) Float64(f *float64, fieldName string, opts ...FieldOption) *checkNumber[float64] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Float64(f *float64, fieldName string) *checkNumber[float64] {
+	v.beforeCheckField(fieldName)
 	return &checkNumber[float64]{v: v, n: f, formatter: formatFloat64}
 }
 
-func (v *Validator) String(s *string, fieldName string, opts ...FieldOption) *checkString {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) String(s *string, fieldName string) *checkString {
+	v.beforeCheckField(fieldName)
 	return &checkString{v: v, s: s}
 }
 
-func (v *Validator) Struct[T any, V validatable[T]](s V, fieldName string, opts ...FieldOption) *checkStruct[T, V] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Struct[T any, V validatable[T]](s V, fieldName string) *checkStruct[T, V] {
+	v.beforeCheckField(fieldName)
 	return &checkStruct[T, V]{v: v, s: s}
 }
 
-func (v *Validator) Slice[T any](s []T, fieldName string, opts ...FieldOption) *checkSlice[T] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Slice[T any](s []T, fieldName string) *checkSlice[T] {
+	v.beforeCheckField(fieldName)
 	return &checkSlice[T]{v: v, s: s}
 }
 
-func (v *Validator) Map[K comparable, V any](m map[K]V, fieldName string, opts ...FieldOption) *checkMap[K, V] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Map[K comparable, V any](m map[K]V, fieldName string) *checkMap[K, V] {
+	v.beforeCheckField(fieldName)
 	return &checkMap[K, V]{v: v, m: m}
 }
 
-func (v *Validator) Any[T any](a *T, fieldName string, opts ...FieldOption) *checkAny[T] {
-	v.beforeCheckField(fieldName, opts)
+func (v *Validator) Any[T any](a *T, fieldName string) *checkAny[T] {
+	v.beforeCheckField(fieldName)
 	return &checkAny[T]{v: v, a: a}
 }
 
@@ -185,15 +185,15 @@ func (v *Validator) checkRoot[T any, V validatable[T]](r V) {
 	} else {
 		key = r
 	}
-	v.diveTypes[key] = struct{}{}
+	v.activeDiveKeys[key] = struct{}{}
 	r.Checklist(v)
 }
 
 func (v *Validator) shouldStop() bool {
-	return v.hasError && !v.allRule
+	return v.hasError && !v.allRules
 }
 
-func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
+func (v *Validator) beforeCheckField(fieldName string) {
 	if v.fieldInfo.isElem {
 		v.fieldInfo = &FieldInfo{
 			fieldName:   v.fieldInfo.fieldName,
@@ -207,17 +207,6 @@ func (v *Validator) beforeCheckField(fieldName string, opts []FieldOption) {
 			virtualDive:     v.fieldInfo.virtualDive,
 		}
 	}
-	for _, o := range opts {
-		o(v.fieldInfo)
-	}
-}
-
-func (v *Validator) beforeCheckRule(opts []RuleOption) {
-	v.fieldInfo.code = ""
-	v.fieldInfo.messageBuilder = nil
-	for _, opt := range opts {
-		opt(v.fieldInfo)
-	}
 }
 
 func (v *Validator) beforeDiveStruct[T any, V validatable[T]](value V) (allowed bool, after func()) {
@@ -225,7 +214,7 @@ func (v *Validator) beforeDiveStruct[T any, V validatable[T]](value V) (allowed 
 		return false, nil
 	}
 
-	if _, ok := v.diveTypes[value]; ok {
+	if _, ok := v.activeDiveKeys[value]; ok {
 		return false, nil
 	}
 
@@ -234,10 +223,10 @@ func (v *Validator) beforeDiveStruct[T any, V validatable[T]](value V) (allowed 
 		fieldNamePrefix: v.fieldInfo.fieldName + ".",
 		virtualDive:     v.fieldInfo.virtualDive,
 	}
-	v.diveTypes[value] = struct{}{}
+	v.activeDiveKeys[value] = struct{}{}
 	return true, func() {
 		v.fieldInfo = prev
-		delete(v.diveTypes, value)
+		delete(v.activeDiveKeys, value)
 	}
 }
 
@@ -249,7 +238,7 @@ func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](value V) (target V,
 		key = value
 	}
 
-	if _, ok := v.diveTypes[key]; ok {
+	if _, ok := v.activeDiveKeys[key]; ok {
 		return nil, nil
 	}
 
@@ -262,10 +251,10 @@ func (v *Validator) beforeDiveEmbed[T any, V validatable[T]](value V) (target V,
 		value = V(new(T))
 		v.fieldInfo.virtualDive = true
 	}
-	v.diveTypes[key] = struct{}{}
+	v.activeDiveKeys[key] = struct{}{}
 	return value, func() {
 		v.fieldInfo = prev
-		delete(v.diveTypes, key)
+		delete(v.activeDiveKeys, key)
 	}
 }
 
@@ -280,19 +269,16 @@ func (v *Validator) beforeDiveSliceMap(elemName string) (after func()) {
 	}
 }
 
-func (v *Validator) checkRule(isNil bool, messageBuilder messageBuilder, formatArgs func() []string, checkNil func() bool, checkNonNil func() bool) {
+func (v *Validator) checkRule(opts []RuleOption, messageBuilder messageBuilder, formatArgs func() []string, rule func() bool) {
 	if v.shouldStop() {
 		return
 	}
-	var fail bool
-	if isNil {
-		if !v.fieldInfo.omitNil {
-			fail = !checkNil()
-		}
-	} else if checkNonNil != nil {
-		fail = !checkNonNil()
+	v.fieldInfo.code = ""
+	v.fieldInfo.messageBuilder = nil
+	for _, opt := range opts {
+		opt(v.fieldInfo)
 	}
-	if fail {
+	if !rule() {
 		var args []string
 		if formatArgs != nil {
 			args = formatArgs()
@@ -303,7 +289,7 @@ func (v *Validator) checkRule(isNil bool, messageBuilder messageBuilder, formatA
 
 func (v *Validator) fail(messageBuilder messageBuilder, args []string) {
 	v.hasError = true
-	if !v.allRule {
+	if !v.allRules {
 		v.code = v.fieldInfo.code
 	}
 	v.fieldInfo.args = args
@@ -322,7 +308,7 @@ func newValidator(ctx context.Context) *Validator {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return &Validator{ctx: ctx, fieldInfo: &FieldInfo{}, diveTypes: make(map[any]struct{})}
+	return &Validator{ctx: ctx, fieldInfo: &FieldInfo{}, activeDiveKeys: make(map[any]struct{})}
 }
 
 // FieldInfo 字段信息
@@ -331,8 +317,6 @@ type FieldInfo struct {
 	fieldNamePrefix string
 	// 是否为切片元素、map的key或value
 	isElem bool
-	// nil时忽略校验
-	omitNil bool
 	// 虚拟下沉（结构体字段、内嵌结构体为临时创建的零值）
 	virtualDive bool
 	// 字段名

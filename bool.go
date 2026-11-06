@@ -19,20 +19,20 @@ type checkBool struct {
 	b *bool
 }
 
+func (c *checkBool) isNil() bool {
+	return c.b == nil || c.v.fieldInfo.virtualDive
+}
+
 func (c *checkBool) Required(opts ...RuleOption) *checkBool {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.b == nil, messageRequired, nil, func() bool {
-		return false
-	}, nil)
+	c.v.checkRule(opts, messageRequired, nil, func() bool {
+		return !c.isNil()
+	})
 	return c
 }
 
-func (c *checkBool) Custom(successIfNil bool, custom func(b bool) bool, opts ...RuleOption) *checkBool {
-	c.v.beforeCheckRule(opts)
-	c.v.checkRule(c.v.fieldInfo.virtualDive || c.b == nil, messageDefault, nil, func() bool {
-		return successIfNil
-	}, func() bool {
-		return custom(*c.b)
+func (c *checkBool) Custom(custom func(b bool) bool, opts ...RuleOption) *checkBool {
+	c.v.checkRule(opts, messageDefault, nil, func() bool {
+		return c.isNil() || custom == nil || custom(*c.b)
 	})
 	return c
 }

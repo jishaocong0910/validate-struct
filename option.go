@@ -16,17 +16,9 @@ package validate
 
 type ValidatorOption func(v *Validator)
 
-func AllRule() ValidatorOption {
+func AllRules() ValidatorOption {
 	return func(v *Validator) {
-		v.allRule = true
-	}
-}
-
-type FieldOption func(*FieldInfo)
-
-func OmitNil() FieldOption {
-	return func(o *FieldInfo) {
-		o.omitNil = true
+		v.allRules = true
 	}
 }
 

@@ -34,22 +34,17 @@ func TestCheckStruct_Required(t *testing.T) {
 func TestCheckStruct_Custom(t *testing.T) {
 	r := require.New(t)
 	checklistFail(r, func(v *validate.Validator) {
-		v.Struct(&validate.DemoUser{}, "param").Custom(true, func(t validate.DemoUser) bool {
+		v.Struct(&validate.DemoUser{}, "param").Custom(func(t validate.DemoUser) bool {
 			return false
 		})
 	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Struct(&validate.DemoUser{}, "param").Custom(false, func(t validate.DemoUser) bool {
+		v.Struct(&validate.DemoUser{}, "param").Custom(func(t validate.DemoUser) bool {
 			return true
 		})
 	})
-	checklistFail(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoUser)(nil), "param").Custom(false, func(t validate.DemoUser) bool {
-			return true
-		})
-	}, "param is invalid")
 	checklistSuccess(r, func(v *validate.Validator) {
-		v.Struct((*validate.DemoUser)(nil), "param").Custom(true, func(t validate.DemoUser) bool {
+		v.Struct((*validate.DemoUser)(nil), "param").Custom(func(t validate.DemoUser) bool {
 			return false
 		})
 	})
