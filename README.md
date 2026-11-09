@@ -1,448 +1,471 @@
-# Gverify
+# validate-struct
 
-一款用于Golang的结构体校验工具。它不通过标签来指定校验规则，而是由代码指定。使用标签的校验工具需要修改结构体，在一些代码生成器生成的结构体上使用时，可能导致代码覆盖或冲突问题。Gverify可实现**零代码入侵**，支持自定义错误码和错误消息，不使用反射，处理速度理论上比使用标签的校验工具快。
+[English](#english) | [中文](#中文)
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/jishaocong0910/gverify.svg)](https://pkg.go.dev/github.com/jishaocong0910/gverify)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jishaocong0910/gverify)](https://goreportcard.com/report/github.com/jishaocong0910/gverify)
-![coverage](https://raw.githubusercontent.com/jishaocong0910/gverify/badges/.badges/main/coverage.svg)
+<a id="english"></a>
 
-# 安装
+validate-struct is a Go library for defining struct validation rules in code. It provides a small set of general-purpose rules, with custom functions for application-specific checks. Validation logic can live separately from model definitions, including structs generated from protobuf.
+
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/jishaocong0910/validate-struct)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jishaocong0910/validate-struct.svg)](https://pkg.go.dev/github.com/jishaocong0910/validate-struct)
+![coverage](https://raw.githubusercontent.com/jishaocong0910/validate-struct/badges/.badges/main/coverage.svg)
+
+## Installation
 
 ```shell
-go get github.com/jishaocong0910/gverify
+go get github.com/jishaocong0910/validate-struct
 ```
 
-# 用法与例子
+## Quick Start
 
 ```go
 package main
 
 import (
-    "context"
-    "fmt"
-    "regexp"
+	"context"
+	"fmt"
+	"regexp"
 
-    vfy "github.com/jishaocong0910/gverify"
+	"github.com/jishaocong0910/validate-struct"
 )
 
 type Book struct {
-    Title       string
-    Isbn        string
-    Description *string
-    Stock       int
-    Price       float64
-    Language    *string
-    Author      *Author
-    Categories  []*Category
+	Title       string
+	Isbn        string
+	Description *string
+	Stock       int
+	Price       float64
+	Language    string
+	Author      *Author
+	Categories  []*Category
 }
 
-func (b *Book) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &b.Title, "title").NotBlank().Max(10)
-    vfy.String(vc, &b.Isbn, "isbn").NotBlank().Regex(regexp.MustCompile(`^[0-9]{13}$`))
-    vfy.String(vc, b.Description, "description").Required()
-    vfy.Int(vc, &b.Stock, "stock").Range(0, 100)
-    vfy.Float64(vc, &b.Price, "price").Gt(0)
-    vfy.String(vc, b.Language, "language").Enum([]string{"zh-cn", "en-US", "ja-JP"})
-    vfy.Struct(vc, b.Author, "author").Required().Dive()
-    vfy.Slice(vc, b.Categories, "categories").NotEmpty().Dive(func(e *Category) {
-        vfy.Struct(vc, e, "").Dive()
-    })
+func (b *Book) Checklist(v *validate.Validator) {
+	v.String(&b.Title, "title").NotBlank().Max(10)
+	v.String(&b.Isbn, "isbn").NotBlank().Regex(regexp.MustCompile(`^[0-9]{13}$`))
+	v.String(b.Description, "description").Required()
+	v.Int(&b.Stock, "stock").BetweenInclusive(0, 100)
+	v.Float64(&b.Price, "price").Gt(0)
+	v.String(&b.Language, "language").Enum([]string{"zh-cn", "en-US", "ja-JP"})
+	v.Struct(b.Author, "author").Required().Dive()
+	v.Slice(b.Categories, "categories").NotEmpty().Dive(func(e *Category) {
+		v.Struct(e, "").Dive()
+	})
 }
 
 type Author struct {
-    Name    string
-    Resumes *string
+	Name    string
+	Resumes *string
 }
 
-func (a Author) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &a.Name, "name").NotBlank()
-    vfy.String(vc, &a.Name, "resumes").NotBlank()
+func (a Author) Checklist(v *validate.Validator) {
+	v.String(&a.Name, "name").NotBlank()
+	v.String(a.Resumes, "resumes").Required().NotBlank()
 }
 
 type Category struct {
-    Id   string
-    Sort int
+	Id   string
+	Sort int
 }
 
-func (c Category) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &c.Id, "id").NotBlank()
-    vfy.Int(vc, &c.Sort, "sort").Max(999)
+func (c Category) Checklist(v *validate.Validator) {
+	v.String(&c.Id, "id").NotBlank()
+	v.Int(&c.Sort, "sort").Max(999)
 }
 
 func main() {
-    b := Book{Author: &Author{}, Categories: []*Category{{Sort: 127}, {Id: "c1", Sort: 1000}}}
-    code, _, msgs := vfy.Check(context.Background(), &b, vfy.All())
-    if code != vfy.SUCCESS {
-        for i, msg := range msgs {
-            fmt.Println(i, msg)
-        }
-    }
-    // Output:
-    // 0 title must not be blank
-    // 1 isbn must not be blank
-    // 2 isbn's format is illegal
-    // 3 description is required
-    // 4 price must be greater than 0
-    // 5 language must be zh-cn, en-US or ja-JP
-    // 6 author.name must not be blank
-    // 7 author.resumes must not be blank
-    // 8 categories[0].id must not be blank
-    // 9 categories[1].sort must not be greater than 999
+	b := Book{Author: &Author{}, Categories: []*Category{{Sort: 127}, {Id: "c1", Sort: 1000}}}
+	code, _, messages := validate.Check(context.Background(), &b, validate.AllRules())
+	if code != validate.SUCCESS {
+		for i, msg := range messages {
+			fmt.Println(i, msg)
+		}
+	}
+	// Output:
+	// 0 title must not be blank
+	// 1 isbn must not be blank
+	// 2 isbn has an invalid format
+	// 3 description is required
+	// 4 price must be greater than 0
+	// 5 language must be "zh-cn", "en-US", or "ja-JP"
+	// 6 author.name must not be blank
+	// 7 author.resumes is required
+	// 8 categories[0].id must not be blank
+	// 9 categories[1].sort must be at most 999
 }
 ```
 
-# 校验入口
+## Validation Function
 
-***校验函数***：`vfy.Check`，<u>只能校验非nil结构体</u>。
+Call `validate.Check` to validate a struct.
 
-<table>
-    <th>入参</th>
-    <th>描述</th>
-    <tr>
-        <td width=170px>ctx context.Context</td>
-        <td>Context</td>
-    </tr>
-    <tr>
-        <td>s vfy.Verifiable</td>
-        <td>待校验的结构体</td>
-    </tr>
-    <tr>
-        <td>opts ...vfy.Option</td>
-        <td>选项</td>
-    </tr>
-    
-</table>
+Parameters:
 
-<table>
-    <th>返回</th>
-    <th>描述</th>
-    <tr>
-        <td width=160px>code string</td>
-        <td>错误码，"SUCCESS"为校验成功，"FAIL"为校验失败，可使用常量<i>vfy.SUCCESS</i>和<i>vfy.FAIL</i>进行比较。</td>
-    </tr>
-    <tr>
-        <td>msg string</td>
-        <td>首个错误消息</td>
-    </tr>
-    <tr>
-        <td>msgs []string</td>
-        <td>所有错误消息</td>
-    </tr>
-</table>
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `ctx` | `context.Context` | The context available to validation rules. A `nil` context defaults to `context.Background()`. |
+| `target` | `V` | A pointer to the struct to validate. It must implement `validate.Validatable`. |
+| `opts` | `...ValidatorOption` | Options that configure validation behavior. |
 
-| 选项      | 描述                              |
-|---------|---------------------------------|
-| vfy.All | 校验所有校验规则，不使用此选项时，首个校验错误出现既停止校验。 |
+Return values:
 
-# Checklist方法
+| Return value | Type | Description |
+| --- | --- | --- |
+| `code` | `string` | `validate.SUCCESS` if validation succeeds; otherwise, `validate.FAIL` unless a custom error code is set. |
+| `message` | `string` | The first error message. |
+| `messages` | `[]string` | The list of error messages. |
 
-结构体通过实现*vfy.Verifiable*接口的*Checklist*方法，在其中编写字段的校验规则。校验字段时，根据字段类型，调用对应的***字段类型函数***，传入<i>Checklist</i>方法的<i>vc</i>参数、字段值的指针和字段名称，再链式调用***规则方法***，可指定一些选项。
+By default, `Check` stops validation at the first failed rule and returns at most one error message. Pass `validate.AllRules()` to check every rule and collect all error messages.
 
-*e.g.*
+## Implementing Validatable
+
+To make a struct validatable, implement `validate.Validatable` and define its rules in `Checklist`.
+
+For generated types, you can add the method in a separate file in the same package. Alternatively, embed the generated type in a wrapper struct in your own package and implement `Checklist` on the wrapper. Both approaches keep validation logic outside generated files.
 
 ```go
-func (b *Book) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &b.Title, "title", vfy.Omitempty()).NotBlank().Max(10, vfy.Code("TITLE_TOO_LONG"))
+type Validatable interface {
+    Checklist(v *Validator)
 }
 ```
 
-| 字段类型函数      | 对应类型           |
-|-------------|----------------|
-| vfy.Bool    | bool           |
-| vfy.Byte    | byte           |
-| vfy.Int     | int            |
-| vfy.Int8    | int8           |
-| vfy.Int16   | int16          |
-| vfy.Int32   | int32          |
-| vfy.Int64   | int64          |
-| vfy.Uint    | uint           |
-| vfy.Uint8   | uint8          |
-| vfy.Uint16  | uint16         |
-| vfy.Uint32  | uint32         |
-| vfy.Uint64  | uint64         |
-| vfy.Float32 | float32        |
-| vfy.Float64 | float64        |
-| vfy.String  | string         |
-| vfy.Slice   | slice          |
-| vfy.Map     | map            |
-| vfy.Struct  | struct         |
-| vfy.Embed   | 内嵌struct，且非nil |
-| vfy.Any     | any            |
+## Validator
 
-<table>
-    <tr>
-        <th>规则方法</th>
-        <th>描述</th>
-    </tr>
-    <tr>
-        <td>Required</td>
-        <td>必填，即不能为nil。</td>
-    </tr>
-    <tr>
-        <td>NotBlank</td>
-        <td>string不能为空白。nil值处理：视为空字符串。</td>
-    </tr>
-    <tr>
-        <td>Regex</td>
-        <td>string必须匹配正则表达式。nil值处理：视为空字符串。</td>
-    </tr>
-    <tr>
-        <td>NotEmpty</td>
-        <td>slice和map长度必须大于0。nil值处理：视为0长度。</td>
-    </tr>
-    <tr>
-        <td>Length</td>
-        <td>string字符长度、slice和map长度的固定值。nil值处理：视为0长度。</td>
-    </tr>
-    <tr>
-        <td>Min</td>
-        <td>数值、string字符长度、slice和map长度的最小值。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Max</td>
-        <td>数值、string字符长度、slice和map长度的最大值。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Range</td>
-        <td>数值、string字符长度、slice和map长度的范围值，包含边界。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Gt</td>
-        <td>数值、string字符长度、slice和map长度，必须大于指定值。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Lt</td>
-        <td>数值、string字符长度、slice和map长度，必须小于指定值。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Within</td>
-        <td>数值、string字符长度、slice和map长度的范围值，不包含边界。nil值处理：数值视为无穷小，长度视为0。</td>
-    </tr>
-    <tr>
-        <td>Enum</td>
-        <td>枚举值</td>
-    </tr>
-    <tr>
-        <td>Custom</td>
-        <td>自定义校验</td>
-    </tr>
-    <tr>
-        <td>Dive</td>
-        <td>下沉校验struct字段、slice元素、map的key和value。</td>
-    </tr>
-</table>
+Use `validate.Validator` to select fields and apply rules for their types.
 
-| 字段类型函数选项      | 描述       |
-|---------------|----------|
-| vfy.Omitempty | 值为nil时忽略 |
-| vfy.Amend     | 修正字段值    |
+| Method | Description |
+| --- | --- |
+| `Ctx` | Returns the context passed to `Check`. |
+| `Bool`, `Byte`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `Uint`, `Uint8`, `Uint16`, `Uint32`, `Uint64`, `Float32`, `Float64`, `String`, `Struct`, `Slice`, `Map`, `Any` | Select a field and return a checker with rules for that type. Pass a pointer for all types except slices and maps. |
+| `Embed` | Validates an embedded struct that implements `validate.Validatable`. |
 
-| 规则方法选项   | 描述      |
-|----------|---------|
-| vfy.Code | 自定义错误码  |
-| vfy.Msg  | 自定义错误消息 |
+## Field Names
 
-# 自定义错误码&错误消息
+Each field takes a name to use in error messages. Within a slice or map `Dive` callback, the validator supplies the name automatically and ignores the name passed to the field method:
 
-<i>vfy.Code</i>只在不使用<i>vfy.All()</i>选项的情况下有效。
-
-<i>vfy.Msg</i>选项须传入一个函数，通过函数参数<i> f </i>的<i>Msg</i>方法设置错误消息，同时参数<i> f </i>还提供了一些动态参数用于构建错误消息。
-
-*e.g.*
-
-```go
-func (b *Book) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &b.Title, "title").Max(10, vfy.Msg(func(f *vfy.FieldInfo) {
-        f.Msg("%s is too long", f.FieldName(), f.Confine(0))
-    }))
-}
-```
-
-<table>
-    <th width="130px">动态参数方法</th>
-    <th>描述</th>
-    <tr>
-        <td>FieldName</td>
-        <td>返回具有层级关系的字段名称。例如：<i>title</i>、<i>author.name</i>、<i>categoryId[2].sort</i>。</td>
-    </tr>
-    <tr>
-        <td>Confine</td>
-        <td>返回<i>规则方法</i>的指定索引的限制值的字符串形式。例如：对于<i>Max(10)</i>，<i>vc.Confine(0)</i>返回<i>10</i>；对于<i>Range(5, 15)</i>，<i>vc.Confine(0)</i>返回<i>"5"</i>，<i>vc.Confine(1)</i>返回<i>"15"</i>。</td>
-    </tr>
-    <tr>
-        <td>Confines</td>
-        <td>返回<i>规则方法</i>的所有限制值的字符串形式，用","拼接，若数量超过两个，则最后一个用"or"拼接。例如：对于<i>Enum("zh-cn", "en-US")</i>，返回"zh-cn, en-US"；对于<i>Enum("zh-cn", "en-US", "ja-JP")</i>，返回"zh-cn, en-US or ja-JP"。</td>
-    </tr>
-</table>
-
-# 元素的字段名称
-
-在slice和map的<i>Dive</i>方法内校验元素值时，会预设字段名称并且无法更改，slice元素为<i><字段名称>[<索引>]</i>，对于map，key为<i><字段名称>$key</i>，value为<i><字段名称>$value</i>。
-
-*e.g.*
+- Slice elements use `fieldName[index]`.
+- Map keys use `fieldName$key`.
+- Map values use `fieldName$value`.
 
 ```go
 package main
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
 
-    vfy "github.com/jishaocong0910/gverify"
+	"github.com/jishaocong0910/validate-struct"
 )
 
-type Demo struct {
-    MySlice []int
-    MyMap   map[string]int
+type Product struct {
+	Name       string
+	Tags       []int
+	Attributes map[string]int
 }
 
-func (d Demo) Checklist(vc *vfy.VContext) {
-    vfy.Slice(vc, d.MySlice, "mySlice").Dive(func(t int) {
-        // fieldName参数无效
-        vfy.Int(vc, &t, "elem").Gt(5)
-    })
-    vfy.Map(vc, d.MyMap, "myMap").Dive(func(k string) {
-        // fieldName参数无效
-        vfy.String(vc, &k, "mapKey").NotBlank()
-    }, func(v int) {
-        // fieldName参数无效
-        vfy.Int(vc, &v, "mapValue").Gt(5)
-    })
+func (p Product) Checklist(v *validate.Validator) {
+	v.String(&p.Name, "name").NotBlank()
+	v.Slice(p.Tags, "tags").Dive(func(t int) {
+		v.Int(&t, "useless").Gt(5)
+	})
+	v.Map(p.Attributes, "attributes").Dive(func(key string) {
+		v.String(&key, "useless").NotBlank()
+	}, func(value int) {
+		v.Int(&value, "useless").Gt(5)
+	})
 }
 
 func main() {
-    d := &Demo{
-        MySlice: []int{4},
-        MyMap:   map[string]int{"": 4},
-    }
-    code, _, msgs := vfy.Check(context.Background(), d, vfy.All())
-    if code != vfy.SUCCESS {
-        for i, msg := range msgs {
-            fmt.Println(i, msg)
-        }
-    }
-    // Output:
-    // 0 mySlice[0] must be greater than 5
-    // 1 myMap$key must not be blank
-    // 2 myMap$value must be greater than 5
+	d := &Product{
+		Tags:       []int{4},
+		Attributes: map[string]int{"": 4},
+	}
+	code, _, messages := validate.Check(context.Background(), d, validate.AllRules())
+	if code != validate.SUCCESS {
+		for i, msg := range messages {
+			fmt.Println(i, msg)
+		}
+	}
+	// Output:
+	// 0 name must not be blank
+	// 1 tags[0] must be greater than 5
+	// 2 attributes$key must not be blank
+	// 3 attributes$value must be greater than 5
 }
 ```
 
-# 零代码入侵
+## Validation Rules
 
-零代码入侵是Gverify的特色，可在不修改结构文件的情况下实现校验，原理是<i>Checklist</i>方法可以与结构体分开不同文件，有以下三种场景，一些场景可实现零代码入侵。
+Chain rule methods to apply multiple checks to a field. All rules except `Required` skip `nil` values. `Dive` returns no value and must be the last call in a chain.
 
-* 在结构体所在文件
+| Method | Description |
+| --- | --- |
+| `Required` | Requires a non-nil value. |
+| `NotBlank` | Rejects empty strings and strings containing only whitespace. |
+| `Regex` | Checks that a string matches a regular expression. |
+| `NotEmpty` | Requires a length greater than zero. |
+| `Length` | Requires an exact length. |
+| `Min` | Sets an inclusive lower bound on a value or length. |
+| `Max` | Sets an inclusive upper bound on a value or length. |
+| `BetweenInclusive` | Checks that a value or length falls within a range, including both bounds. |
+| `Gt` | Requires a value or length greater than the given bound. |
+| `Lt` | Requires a value or length less than the given bound. |
+| `BetweenExclusive` | Checks that a value or length falls within a range, excluding both bounds. |
+| `Enum` | Checks that a value is one of the allowed values. |
+| `Custom` | Applies a custom validation function. |
+| `Dive` | Validates nested struct fields, slice elements, or map keys and values. |
 
-对于非代码生成器生成的结构体，可直接在结构体所在文件实现<i>vfy.Verifiable</i>接口，上文中的代码示例都是这种风格。
+## Error Codes
 
-* 在同目录其他文件
+Pass `validate.Code(...)` to a rule to specify the code returned when that rule fails. Custom error codes apply only in the default mode; they are ignored when `validate.AllRules()` is enabled.
 
-为了避免代码生成器覆盖文件，可以在同包下另一个文件实现<i>vfy.Verifiable</i>接口。
+## Error Messages
 
-*目录结构*
+Pass `validate.Message(...)` to a rule to override its default error message. The callback, `func(f *validate.FieldInfo) string`, builds the message from the field name and rule arguments available through `FieldInfo`.
 
-```
-.
-├─ gen_struct.go
-└─ gen_struct_checklist.go
-```
+| Method | Description |
+| --- | --- |
+| `FieldName` | Returns the full field path. Examples: `title`, `author.name`, and `categoryId[2].sort`. |
+| `Arg` | Returns the rule argument at the given index as a string. For `Max(10)`, `Arg(0)` returns `10`. For `BetweenInclusive(5, 15)`, `Arg(0)` returns `5` and `Arg(1)` returns `15`. |
+| `Args` | Formats the rule arguments as a list, using ` or ` between two values and `, or ` before the last of three or more values. String enum values are enclosed in double quotes. For `Enum([]string{"zh-cn", "en-US"})`, the result is `"zh-cn" or "en-US"`. For `Enum([]string{"zh-cn", "en-US", "ja-JP"})`, it is `"zh-cn", "en-US", or "ja-JP"`. |
 
-*gen_struct.go*
+For example:
 
 ```go
-package demo
-
-type GenStruct struct {
-    Id   string
-    Name string
-}
+v.String(&b.Title, "title").Max(10, validate.Message(func(f *validate.FieldInfo) string {
+	return fmt.Sprintf("%s exceeds max length %s", f.FieldName(), f.Arg(0))
+}))
 ```
 
-*gen_struct_checklist.go*
+---
 
-```go
-package demo
+## 中文
 
-import vfy "github.com/jishaocong0910/gverify"
+[English](#english) | [中文](#中文)
 
-func (g GenStruct) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &g.Id, "id").NotBlank()
-    vfy.String(vc, &g.Name, "name").NotBlank()
-}
+用于Go的编程式结构体校验工具，提供基础、通用的校验规则，并通过自定义函数扩展业务校验逻辑。校验规则使用Go代码编写，可与模型定义分开维护，适合protobuf等工具生成的结构体。
+
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/jishaocong0910/validate-struct)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jishaocong0910/validate-struct.svg)](https://pkg.go.dev/github.com/jishaocong0910/validate-struct)
+![coverage](https://raw.githubusercontent.com/jishaocong0910/validate-struct/badges/.badges/main/coverage.svg)
+
+## 安装
+
+```shell
+go get github.com/jishaocong0910/validate-struct
 ```
 
-* 在其他目录的文件
-
-也可以在其他包实现`vfy.Verifiable`接口。由于Golang语法禁止在其他包增加结构体方法，因此需增加一个内嵌原结构体的新的结构体，通过新的结构体来校验。
-
-*目录结构*
-
-```
-.
-├─ model
-│  └─ gen_struct.go
-└─ check
-   └─ gen_struct_checklist.go
-```
-
-*gen_struct.go*
-
-```go
-package model
-
-type GenStruct struct {
-    Id   string
-    Name string
-}
-```
-
-*gen_struct_checklist.go*
-
-```go
-package check
-
-import (
-    "demo/model"
-
-    vfy "github.com/jishaocong0910/gverify"
-)
-
-type GenStruct struct {
-    model.GenStruct
-}
-
-func (g GenStruct) Checklist(vc *vfy.VContext) {
-    vfy.String(vc, &g.Id, "id").NotBlank()
-    vfy.String(vc, &g.Name, "name").NotBlank()
-}
-```
-
-*校验示例*
+## 快速开始
 
 ```go
 package main
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
+	"regexp"
 
-    "demo/check"
-    "demo/model"
-
-    vfy "github.com/jishaocong0910/gverify"
+	"github.com/jishaocong0910/validate-struct"
 )
 
-func main() {
-    g := model.GenStruct{}
-    code, _, msgs := vfy.Check_(context.Background(), &check.GenStruct{g}, vfy.All())
-    if code != vfy.SUCCESS {
-        for i, msg := range msgs {
-            fmt.Println(i, msg)
-        }
-    }
-    // Output:
-    // 0 id must not be blank
-    // 1 name must not be blank
+type Book struct {
+	Title       string
+	Isbn        string
+	Description *string
+	Stock       int
+	Price       float64
+	Language    string
+	Author      *Author
+	Categories  []*Category
 }
+
+func (b *Book) Checklist(v *validate.Validator) {
+	v.String(&b.Title, "title").NotBlank().Max(10)
+	v.String(&b.Isbn, "isbn").NotBlank().Regex(regexp.MustCompile(`^[0-9]{13}$`))
+	v.String(b.Description, "description").Required()
+	v.Int(&b.Stock, "stock").BetweenInclusive(0, 100)
+	v.Float64(&b.Price, "price").Gt(0)
+	v.String(&b.Language, "language").Enum([]string{"zh-cn", "en-US", "ja-JP"})
+	v.Struct(b.Author, "author").Required().Dive()
+	v.Slice(b.Categories, "categories").NotEmpty().Dive(func(e *Category) {
+		v.Struct(e, "").Dive()
+	})
+}
+
+type Author struct {
+	Name    string
+	Resumes *string
+}
+
+func (a Author) Checklist(v *validate.Validator) {
+	v.String(&a.Name, "name").NotBlank()
+	v.String(a.Resumes, "resumes").Required().NotBlank()
+}
+
+type Category struct {
+	Id   string
+	Sort int
+}
+
+func (c Category) Checklist(v *validate.Validator) {
+	v.String(&c.Id, "id").NotBlank()
+	v.Int(&c.Sort, "sort").Max(999)
+}
+
+func main() {
+	b := Book{Author: &Author{}, Categories: []*Category{{Sort: 127}, {Id: "c1", Sort: 1000}}}
+	code, _, messages := validate.Check(context.Background(), &b, validate.AllRules())
+	if code != validate.SUCCESS {
+		for i, msg := range messages {
+			fmt.Println(i, msg)
+		}
+	}
+	// Output:
+	// 0 title must not be blank
+	// 1 isbn must not be blank
+	// 2 isbn has an invalid format
+	// 3 description is required
+	// 4 price must be greater than 0
+	// 5 language must be "zh-cn", "en-US", or "ja-JP"
+	// 6 author.name must not be blank
+	// 7 author.resumes is required
+	// 8 categories[0].id must not be blank
+	// 9 categories[1].sort must be at most 999
+}
+```
+
+## 校验函数
+
+调用`validate.Check`校验结构体。
+
+参数：
+
+| 参数     | 类型                 | 说明                                                           |
+|----------|----------------------|----------------------------------------------------------------|
+| `ctx`    | `context.Context`    | 传递给校验器的上下文；为 `nil` 时使用 `context.Background()`。 |
+| `target` | `V`                  | 待校验结构体的指针，结构体需实现 `validate.Validatable` 接口。 |
+| `opts`   | `...ValidatorOption` | 校验器选项。                                                   |
+
+返回值：
+
+| 返回值     | 类型       | 说明                                                        |
+|------------|------------|-------------------------------------------------------------|
+| `code`     | `string`   | 成功时为 `validate.SUCCESS`，失败时默认为 `validate.FAIL`。 |
+| `message`  | `string`   | 首个错误消息。                                              |
+| `messages` | `[]string` | 错误消息列表。                                              |
+
+默认情况下，校验到首个错误时会停止校验，`messages`最多只有1个元素，使用`validate.AllRules`选项可校验所有规则，`messages`将返回所有错误消息。
+
+## 实现Validatable
+
+待校验结构体需实现`validate.Validatable`接口，在`Checklist`方法中编写字段的校验规则。对于会被代码生成器覆盖的结构体，可以在同包的独立文件中实现`Checklist`，也可以在包外定义内嵌原模型的结构体并实现该方法，使校验规则独立于模型维护。
+
+```go
+type Validatable interface {
+    Checklist(v *Validator)
+}
+```
+
+## 校验器
+
+`validate.Validator`提供了各种类型的校验入口。
+
+| 方法                                                                                                                                                                     | 描述                                                                           |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `Ctx`                                                                                                                                                                    | 获取入口函数透传的上下文。                                                     |
+| `Bool`、`Byte`、`Int`、`Int8`、`Int16`、`Int32`、`Int64`、`Uint`、`Uint8`、`Uint16`、`Uint32`、`Uint64`、`Float32`、`Float64`、`String`、`Struct`、`Slice`、`Map`、`Any` | 用于绑定校验字段，并获取对应类型的规则方法。除了`Slice`和`Map`都需要传入指针。 |
+| `Embed`                                                                                                                                                                  | 用于校验实现了`validate.Validatable`接口的内嵌结构体。                         |
+
+## 字段名称
+
+绑定校验字段须指定字段名称，用于在错误消息中显示。而slice和map的`Dive`方法内校验元素值时，会预设字段名称并且无法更改，slice元素为`fieldName[index]`，对于map，key为`fieldName$key`，value为`fieldName$value`。
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/jishaocong0910/validate-struct"
+)
+
+type Product struct {
+	Name       string
+	Tags       []int
+	Attributes map[string]int
+}
+
+func (p Product) Checklist(v *validate.Validator) {
+	v.String(&p.Name, "name").NotBlank()
+	v.Slice(p.Tags, "tags").Dive(func(t int) {
+		v.Int(&t, "useless").Gt(5)
+	})
+	v.Map(p.Attributes, "attributes").Dive(func(key string) {
+		v.String(&key, "useless").NotBlank()
+	}, func(value int) {
+		v.Int(&value, "useless").Gt(5)
+	})
+}
+
+func main() {
+	d := &Product{
+		Tags:       []int{4},
+		Attributes: map[string]int{"": 4},
+	}
+	code, _, messages := validate.Check(context.Background(), d, validate.AllRules())
+	if code != validate.SUCCESS {
+		for i, msg := range messages {
+			fmt.Println(i, msg)
+		}
+	}
+	// Output:
+	// 0 name must not be blank
+	// 1 tags[0] must be greater than 5
+	// 2 attributes$key must not be blank
+	// 3 attributes$value must be greater than 5
+}
+```
+
+## 规则方法
+
+提供了以下规则方法，其中除了`Required`的规则都会忽略`nil`值，可链式调用指定多个规则。`Dive`没有返回值，调用后不能继续追加规则。
+
+| 方法               | 描述                                                     |
+|--------------------|----------------------------------------------------------|
+| `Required`         | 必填，即不能为nil。                                      |
+| `NotBlank`         | 字符串不能为空白。                                       |
+| `Regex`            | 字符串必须匹配正则表达式。                               |
+| `NotEmpty`         | 长度必须大于0。                                          |
+| `Length`           | 长度必须等于指定值。                                     |
+| `Min`              | 数值或长度的最小值。                                     |
+| `Max`              | 数值或长度的最大值。                                     |
+| `BetweenInclusive` | 数值或长度必须在指定范围内，包含边界。                   |
+| `Gt`               | 数值或长度必须大于指定值。                               |
+| `Lt`               | 数值或长度必须小于指定值。                               |
+| `BetweenExclusive` | 数值或长度必须在指定范围内，不包含边界。                 |
+| `Enum`             | 必须是枚举选项中的一个。                                 |
+| `Custom`           | 自定义校验。                                             |
+| `Dive`             | 递归校验struct字段、slice字段元素、map字段的key和value。 |
+
+## 错误码
+
+规则方法使用`validate.Code`选项可自定义错误码。仅在不使用`validate.AllRules`选项的情况下有效。
+
+## 错误消息
+
+规则方法使用`validate.Message`选项可自定义错误消息。通过传入`func(f *validate.FieldInfo) string`函数构建错误消息，`validate.FieldInfo`提供了一些方法返回动态参数。
+
+| 方法        | 描述                                                                                                                                                                                                                                                                                                         |
+|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FieldName` | 返回具有层级关系的字段名称。例如：title、author.name、categoryId[2].sort。                                                                                                                                                                                                                                   |
+| `Arg`       | 返回规则方法的指定索引的限制值的字符串形式。例如：对于`Max(10)`，`Arg(0)`返回`10`；对于`BetweenInclusive(5, 15)`，`Arg(0)`返回`5`，`Arg(1)`返回`15`。                                                                                                                                                        |
+| `Args`      | 返回规则方法的所有限制值的字符串形式。两个值用` or `连接；超过两个值时，前面的值用`, `连接，最后一个值前用`, or `连接。字符串枚举值包含双引号。例如：对于`Enum([]string{"zh-cn", "en-US"})`，返回`"zh-cn" or "en-US"`；对于`Enum([]string{"zh-cn", "en-US", "ja-JP"})`，返回`"zh-cn", "en-US", or "ja-JP"`。 |
+
+*e.g.*
+
+```go
+v.String(&b.Title, "title").Max(10, validate.Message(func(f *validate.FieldInfo) string {
+	return fmt.Sprintf("%s exceeds max length %s", f.FieldName(), f.Arg(0))
+}))
 ```
