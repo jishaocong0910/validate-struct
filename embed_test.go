@@ -1,26 +1,28 @@
-package vfy_test
+package validate_test
 
 import (
 	"testing"
 
-	vfy "github.com/jishaocong0910/gverify"
+	validate "github.com/jishaocong0910/validate-struct"
 	"github.com/stretchr/testify/require"
 )
 
-type embedTest struct {
-	field *string
-}
-
-func (e embedTest) Checklist(vc *vfy.VContext) {
-	vfy.String(vc, e.field, "field").Required()
-}
-
-func TestCheckEmbed_Required(t *testing.T) {
+func TestCheckEmbed_Dive(t *testing.T) {
 	r := require.New(t)
-	testSuccess(r, func(vc *vfy.VContext) {
-		vfy.Embed(vc, (*embedTest)(nil))
+	checklistSuccess(r, func(v *validate.Validator) {
+		v.Embed(&validate.DemoImage{Url: "url", DemoBase: &validate.DemoBase{Id: "id"}})
 	})
-	testFail(r, func(vc *vfy.VContext) {
-		vfy.Embed(vc, &embedTest{})
-	}, "field is required")
+	checklistFail(r, func(v *validate.Validator) {
+		v.Embed(&validate.DemoImage{Url: "url", DemoBase: &validate.DemoBase{}})
+	}, "id must not be blank")
+	checklistFail(r, func(v *validate.Validator) {
+		v.Embed(&validate.DemoImage{Url: "url"})
+	}, "id is required")
+}
+
+func TestCheckEmbed_ShouldStop(t *testing.T) {
+	r := require.New(t)
+	checklistFail(r, func(v *validate.Validator) {
+		v.Embed(&validate.DemoImage{})
+	}, "url must not be blank")
 }

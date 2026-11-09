@@ -1,108 +1,192 @@
-/*
-Copyright 2024-present jishaocong0910
+// Copyright 2024-present jishaocong0910
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+package validate
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package vfy
-
-func NewDefaultContext() *VContext {
-	return &VContext{all: false, fieldInfo: &FieldInfo{}}
+func NewValidator() *Validator {
+	return newValidator(nil)
 }
 
-func GetResult(vc *VContext) (code string, msg string, msgs []string) {
-	if !vc.hasWrong {
+func GetResult(v *Validator) (code string, message string, messages []string) {
+	if !v.hasError {
 		code = SUCCESS
-	} else if vc.code == "" {
+	} else if v.code == "" {
 		code = FAIL
 	} else {
-		code = vc.code
+		code = v.code
 	}
-	msgs = vc.msgs
-	if len(msgs) > 0 {
-		msg = msgs[0]
+	messages = v.messages
+	if len(messages) > 0 {
+		message = messages[0]
 	}
 	return
 }
 
-func SetHasWrong(vc *VContext) {
-	vc.hasWrong = true
+func SetHasError(v *Validator) {
+	v.hasError = true
 }
 
-func SetAll(vc *VContext) {
-	vc.all = true
+func SetAll(v *Validator) {
+	v.allRules = true
 }
 
-func SetFieldName(vc *VContext, fieldName string) {
-	vc.fieldInfo.fieldName = fieldName
+func SetFieldName(v *Validator, fieldName string) {
+	v.fieldInfo.fieldName = fieldName
 }
 
-func SetOmittable(vc *VContext) {
-	Omitempty()(vc.fieldInfo)
-}
-
-func Predicate[T any](vc *VContext, t *T, opts []RuleOption, confineFunc func() []string, predicateNil func() bool, predicateNoNil func() bool) {
-	predicate[int, T](vc, t, opts, msgBuildFuncDefault, confineFunc, predicateNil, predicateNoNil)
+func CheckRule(v *Validator, opts []RuleOption, formatArgs func() []string, rule func() bool) {
+	v.checkRule(opts, messageDefault, formatArgs, rule)
 }
 
 type Number = number
 
-type CheckOption = RuleOption
-
-func IntToConfine(confines ...int) []string {
-	return intToStr(confines...)
+func FormatInt(args ...int) []string {
+	return formatInt(args...)
 }
 
-func Int8ToConfine(confines ...int8) []string {
-	return int8ToStr(confines...)
+func FormatInt8(args ...int8) []string {
+	return formatInt8(args...)
 }
 
-func Int16ToConfine(confines ...int16) []string {
-	return int16ToStr(confines...)
+func FormatInt16(args ...int16) []string {
+	return formatInt16(args...)
 }
 
-func Int32ToConfine(confines ...int32) []string {
-	return int32ToStr(confines...)
+func FormatInt32(args ...int32) []string {
+	return formatInt32(args...)
 }
 
-func Int64ToConfine(confines ...int64) []string {
-	return int64ToStr(confines...)
+func FormatInt64(args ...int64) []string {
+	return formatInt64(args...)
 }
 
-func UintToConfine(confines ...uint) []string {
-	return uintToStr(confines...)
+func FormatUint(args ...uint) []string {
+	return formatUint(args...)
 }
 
-func Uint8ToConfine(confines ...uint8) []string {
-	return uint8ToStr(confines...)
+func FormatUint8(args ...uint8) []string {
+	return formatUint8(args...)
 }
 
-func Uint16ToConfine(confines ...uint16) []string {
-	return uint16ToStr(confines...)
+func FormatUint16(args ...uint16) []string {
+	return formatUint16(args...)
 }
 
-func Uint32ToConfine(confines ...uint32) []string {
-	return uint32ToStr(confines...)
+func FormatUint32(args ...uint32) []string {
+	return formatUint32(args...)
 }
 
-func Uint64ToConfine(confines ...uint64) []string {
-	return uint64ToStr(confines...)
+func FormatUint64(args ...uint64) []string {
+	return formatUint64(args...)
 }
 
-func Float32ToConfine(confines ...float32) []string {
-	return float32ToStr(confines...)
+func FormatFloat32(args ...float32) []string {
+	return formatFloat32(args...)
 }
 
-func Float64ToConfine(confines ...float64) []string {
-	return float64ToStr(confines...)
+func FormatFloat64(args ...float64) []string {
+	return formatFloat64(args...)
+}
+
+type DemoBase struct {
+	Id string
+}
+
+func (d DemoBase) Checklist(v *Validator) {
+	v.String(&d.Id, "id").Required().NotBlank()
+}
+
+type DemoUser struct {
+	DemoBase
+	Name   string
+	Attach *DemoAttach
+}
+
+func (d DemoUser) Checklist(v *Validator) {
+	v.Embed(&d.DemoBase)
+	v.String(&d.Name, "name").NotBlank()
+	v.Struct(d.Attach, "attach").Dive()
+}
+
+type DemoAttach struct {
+	DemoBase
+	Images   []DemoImage
+	Score    map[string]int
+	Profiles map[string]DemoProfile
+}
+
+func (d DemoAttach) Checklist(v *Validator) {
+	v.Embed(&d.DemoBase)
+	v.Slice(d.Images, "images").Dive(func(i DemoImage) {
+		v.Struct(&i, "not work").Dive()
+	})
+	v.Map(d.Score, "score").Dive(nil, func(value int) {
+		v.Int(&value, "not work").Max(100)
+	})
+	v.Map(d.Profiles, "profiles").Dive(func(k string) {
+		v.String(&k, "not work").Max(4)
+	}, func(value DemoProfile) {
+		v.Struct(&value, "not work").Dive()
+	})
+}
+
+type DemoImage struct {
+	Url string
+	*DemoBase
+}
+
+func (d DemoImage) Checklist(v *Validator) {
+	v.String(&d.Url, "url").NotBlank()
+	v.Embed(d.DemoBase)
+}
+
+type DemoProfile struct {
+	Name string
+}
+
+func (s DemoProfile) Checklist(v *Validator) {
+	v.String(&s.Name, "name").NotBlank()
+}
+
+type DemoNode struct {
+	Name string
+	Next *DemoNode
+}
+
+func (d *DemoNode) Checklist(v *Validator) {
+	v.String(&d.Name, "name").NotBlank()
+	v.Struct(d.Next, "next").Dive()
+}
+
+type DemoNode2 struct {
+	Name string
+	*DemoNode2
+}
+
+func (d *DemoNode2) Checklist(v *Validator) {
+	v.String(&d.Name, "name").Required()
+	v.Embed(d.DemoNode2)
+}
+
+type DemoCtx struct {
+}
+
+func (d DemoCtx) Checklist(v *Validator) {
+	value, _ := v.Ctx().Value("foo").(string)
+	v.Int(new(1), "ctx value").Custom(func(n int) bool {
+		return false
+	}, Message(func(f *FieldInfo) string {
+		return "ctx value: " + value
+	}))
 }
